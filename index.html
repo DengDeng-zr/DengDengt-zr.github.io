@@ -4,7 +4,7 @@
 <head>
     <meta charset="UTF-8">
     <meta name="viewport" content="width=device-width, initial-scale=1.0, viewport-fit=cover">
-    <title>传讯·随机选字 | 对方以汉字随机组句回复</title>
+    <title>传讯·字卡回廊 | 对方只能字卡回复</title>
     <style>
         * {
             margin: 0;
@@ -33,6 +33,7 @@
             box-shadow: 0 20px 40px rgba(0, 0, 0, 0.2);
             display: flex;
             overflow: hidden;
+            backdrop-filter: blur(0px);
             transition: all 0.2s;
         }
 
@@ -191,7 +192,7 @@
         }
         .icon-btn:active { transform: scale(0.96); background: #dacbb4; }
 
-        /* 右侧汉字库管理区 */
+        /* 右侧字卡管理区 */
         .cards-panel {
             flex: 1.2;
             background: #fffbf5;
@@ -254,11 +255,11 @@
             transition: 0.1s;
         }
         .card-text {
-            font-size: 1.2rem;
+            font-size: 1rem;
             font-weight: 500;
             color: #4e3723;
-            font-family: 'Noto Serif SC', monospace;
-            letter-spacing: 2px;
+            word-break: break-word;
+            max-width: 70%;
         }
         .card-actions {
             display: flex;
@@ -288,6 +289,7 @@
             to { opacity: 1; transform: translateY(0);}
         }
 
+        /* 滚动条 */
         ::-webkit-scrollbar { width: 6px; }
         ::-webkit-scrollbar-track { background: #e8ddcf; border-radius: 8px; }
         ::-webkit-scrollbar-thumb { background: #c6ab88; border-radius: 8px; }
@@ -311,15 +313,15 @@
     <!-- 左侧聊天区域 -->
     <div class="chat-area">
         <div class="chat-header">
-            <h2>📡 传讯 · 随机选字</h2>
-            <p>💬 你可以随意发送消息 · 对方从「汉字库」中随机选字组成句子回复（1~3句，每句2~6字）</p>
+            <h2>📡 传讯 · 字卡回廊</h2>
+            <p>💬 你可以随意发送消息 · 对方只能使用「字卡」随机回复（1~3条）</p>
         </div>
         <div class="messages-container" id="messagesContainer">
             <!-- 动态消息 -->
             <div class="message opponent">
                 <div class="bubble">
-                    <div class="sender-name">🎴 随机字使</div>
-                    你好～ 我会从右侧汉字库里随机挑字组成句子回你！<br>✏️ 你可以自由增删汉字库中的单字。
+                    <div class="sender-name">📜 字卡使者</div>
+                    你好呀～ 请随意说话，我会用字卡回应你！<br>✏️ 右侧可以自由增删改字卡哦。
                     <div class="message-time">刚刚</div>
                 </div>
             </div>
@@ -335,98 +337,43 @@
         </div>
     </div>
 
-    <!-- 右侧汉字库管理区（单字库） -->
+    <!-- 右侧字卡管理区（可自定义字卡） -->
     <div class="cards-panel">
-        <div class="panel-title">📇 汉字库 · 单字集合</div>
+        <div class="panel-title">📇 字卡仓库</div>
         <div class="add-card-area">
-            <input type="text" id="newCardInput" placeholder="添加单个汉字 (例如: 风)" maxlength="2" autocomplete="off">
+            <input type="text" id="newCardInput" placeholder="新字卡内容, 例如: 原来如此" maxlength="50">
             <button id="addCardBtn">➕ 添加</button>
         </div>
-        <div style="font-size:0.7rem; color:#b48a62; margin: 0 8px;">✨ 对方每次回复会从下方汉字中随机选字组句 (每句2~6个字，随机1~3句)</div>
+        <div style="font-size:0.7rem; color:#b48a62; margin: 0 8px;">✨ 对面只会使用下方字卡回复 (随机1~3条)</div>
         <div class="card-list" id="cardListContainer">
-            <!-- 动态渲染汉字列表 -->
+            <!-- 动态渲染字卡列表 -->
         </div>
-        <div class="replying-tip">⚡ 示例: 库中有「日,月,山,水」，可能回复「山水日月」或「月山水」等</div>
+        <div class="replying-tip">⚡ 对方每次回复会从字卡中随机选1~3条，可重复选取</div>
     </div>
 </div>
 
 <script>
     // ---------- 存储 KEY ----------
-    const STORAGE_KEY = 'random_char_library';
+    const STORAGE_KEY = 'talk_card_deck';
 
-    // ---------- 默认汉字库 (常用单字) ----------
-    const DEFAULT_CHARS = [
-        "日", "月", "山", "水", "风", "云", "雨", "雪", 
-        "花", "鸟", "鱼", "虫", "天", "地", "人", "和", 
-        "春", "夏", "秋", "冬", "江", "河", "湖", "海",
-        "有", "和", "人", "这", "中", "大", "为", "上",
-        "个", "国", "我", "以", "要", "他", "时", "来", 
-        "用", "们", "生", "到", "作", "地", "于", "出",
-        "就", "分", "对", "成", "会", "可", "主", "发", 
-        "年", "动", "同", "工", "也", "能", "下", "过", 
-        "子", "产", "种", "面", "而", "方", "后", "多",
-        "定", "行", "学", "法", "所", "民", "得", "经", 
-        "十", "三", "之", "进", "着", "等", "部", "度", 
-        "家", "电", "力", "里", "如", "水", "化", "高", 
-        "自", "二", "理", "起", "小", "物", "现", "实", 
-        "加", "量", "都", "两", "体", "制", "机", "当",
-        "使", "点", "从", "业", "本", "去", "把", "性", 
-        "好", "应", "开", "它", "合", "还", "因", "由", 
-        "其", "些", "然", "前", "外", "天", "政", "四", 
-        "日", "那", "社", "义", "事", "平", "形", "相", 
-        "全", "表", "间", "样", "与", "关", "各", "重", 
-        "新", "线", "内", "数", "正", "心", "反", "你", 
-        "明", "看", "原", "又", "么", "利", "比", "或",
-        "但", "质", "气", "第", "向", "道", "命", "此", 
-        "变", "条", "只", "没", "结", "解", "问", "意", 
-        "建", "月", "公", "无", "系", "军", "很", "情", 
-        "者", "最", "立", "代", "想", "已", "通", "并",
-        "提", "直", "题", "党", "程", "展", "五", "果",
-        "料", "象", "员", "革", "位", "入", "常", "文",
-        "总", "次", "品", "式", "活", "设", "及", "管", 
-        "特", "件", "长", "求", "老", "头", "基", "资", 
-        "边", "流", "路", "级", "少", "图", "山", "统",
-        "接", "知", "较", "将", "组", "见", "计", "别",
-        "她", "手", "角", "期", "根", "论", "运", "农",
-        "指", "几", "九", "区", "强", "放", "决", "西", 
-        "被", "干", "做", "必", "战", "先", "回", "则",
-        "任", "取", "据", "处", "队", "南", "给", "色", 
-        "光", "门", "即", "保", "治", "北", "造", "百",
-        "规", "热", "领", "七", "海", "口", "东", "导",
-        "器", "压", "志", "世", "金", "增", "争", "济",
-        "阶", "油", "思", "术", "极", "交", "受", "联",
-        "什", "认", "六", "共", "权", "收", "证", "改",
-        "清", "己", "美", "再", "采", "转", "更", "单",
-        "风", "切", "打", "白", "教", "速", "花", "带",
-        "安", "场", "身", "车", "例", "真", "务", "具", 
-        "万", "每", "目", "至", "达", "走", "积", "示",
-        "议", "声", "报", "斗", "完", "类", "八", "离", 
-        "华", "名", "确", "才", "科", "张", "信", "马",
-        "节", "话", "米", "整", "空", "元", "况", "今",
-        "集", "温", "传", "土", "许", "步", "群", "广",
-        "石", "记", "需", "段", "研", "界", "拉", "林",
-        "律", "叫", "且", "究", "观", "越", "织", "装",
-        "影", "算", "低", "持", "音", "众", "书", "布", 
-        "复", "容", "儿", "须", "际", "商", "非", "验",
-        "连", "断", "深", "难", "近", "矿", "千", "周",
-        "委", "素", "技", "备", "半", "办", "青", "省", 
-        "列", "习", "响", "约", "支", "般", "史", "感",
-        "劳", "便", "团", "往", "酸", "历", "市", "克", 
-        "何", "除", "消", "构", "府", "称", "太", "准",
-        "精", "值", "号", "率", "族", "维", "划", "选",
-        "标", "写", "存", "候", "毛", "亲", "快", "效",
-        "斯", "院", "查", "江", "型", "眼", "王", "按", 
-        "格", "养", "易", "置", "派", "层", "片", "始",
-        "却", "专", "状", "育", "厂", "京", "识", "适",
-        "属", "圆", "包", "火", "住", "调", "满", "县", 
-        "局", "照", "参", "红", "细", "引", "听", "该", 
-        "铁", "价", "严", "龙", "飞"
+    // ---------- 默认字卡库 (符合情境) ----------
+    const DEFAULT_CARDS = [
+        "是的呢✨",
+        "原来如此！",
+        "哈哈，有趣～",
+        "我也这么觉得",
+        "不太明白诶",
+        "继续说吧👂",
+        "真的吗？",
+        "太棒了吧🎉",
+        "思考中...",
+        "有道理！"
     ];
 
     // ---------- 全局变量 ----------
-    let charLibrary = [];        // 存储单个汉字字符串数组
-    let pendingReplyTimers = []; // 存储定时器
-
+    let cardDeck = [];          // 存储字卡字符串数组
+    let pendingReplyTimers = []; // 存储即将执行的定时器，用于页面卸载或取消（非必须但防冲突）
+    
     // DOM 元素
     const messagesContainer = document.getElementById('messagesContainer');
     const messageInput = document.getElementById('messageInput');
@@ -455,7 +402,7 @@
         if (sender === 'user') {
             nameSpan.innerHTML = '🧑 我 · 说';
         } else {
-            nameSpan.innerHTML = '🎴 随机字使 · 回';
+            nameSpan.innerHTML = '🎴 字卡使者 · 回';
         }
         
         const contentSpan = document.createElement('div');
@@ -476,57 +423,48 @@
         return messageDiv;
     }
 
-    // 从汉字库中随机生成一个句子 (随机2~6个字)
-    function generateRandomSentence() {
-        const lib = getCurrentLibrary();
-        if (lib.length === 0) return null;
-        // 随机字数 2~6
-        const wordCount = Math.floor(Math.random() * 5) + 2; // 2,3,4,5,6
-        let sentence = "";
-        for (let i = 0; i < wordCount; i++) {
-            const randomIndex = Math.floor(Math.random() * lib.length);
-            sentence += lib[randomIndex];
-        }
-        return sentence;
+    // 获取当前字卡库 (实时)
+    function getCurrentCardDeck() {
+        return [...cardDeck];
     }
 
-    // 获取当前汉字库 (实时)
-    function getCurrentLibrary() {
-        return [...charLibrary];
-    }
-
-    // 对方随机回复（使用汉字库组句）
-    // 回复条数：随机1~3条，每条为一个由汉字库随机拼接的句子（2~6个字）
-    function opponentReplyWithRandomChars(customCount = null) {
-        const currentLib = getCurrentLibrary();
-        if (currentLib.length === 0) {
-            addMessage('opponent', '⚠️ 汉字库空空如也，请在右侧添加一些汉字，我才能随机选字回你～');
+    // 对方随机回复（多条核心逻辑）
+    // count: 指定回复条数, 若不传则随机1~3条
+    function opponentReplyWithCards(customCount = null) {
+        const currentCards = getCurrentCardDeck();
+        if (currentCards.length === 0) {
+            addMessage('opponent', '⚠️ 字卡仓库空空如也，请在右侧添加字卡，我才能回复你～');
             return;
         }
         
         let replyCount = customCount;
         if (replyCount === null || replyCount === undefined) {
+            // 随机 1 到 3 条，但不超过字卡数量太多也可以重复，所以无限制
             replyCount = Math.floor(Math.random() * 3) + 1; // 1,2,3
         }
+        // 保证最少1条
         replyCount = Math.max(1, replyCount);
         
+        // 为了防止同时大量定时器混乱，我们不打断之前的定时器，只是依次追加新的定时器。
+        // 每条消息间隔 0.4s  ~ 0.6s 模拟正在回话
         let delay = 0;
         for (let i = 0; i < replyCount; i++) {
-            const sentence = generateRandomSentence();
-            if (sentence === null) break; // 库为空已在前面拦截
+            // 随机选取字卡 (允许重复)
+            const randomIndex = Math.floor(Math.random() * currentCards.length);
+            const cardText = currentCards[randomIndex];
             const timer = setTimeout(() => {
-                addMessage('opponent', sentence);
+                addMessage('opponent', cardText);
             }, delay);
             pendingReplyTimers.push(timer);
-            delay += 420; // 间隔0.42秒，有节奏感
+            delay += 380; // 间隔0.38秒，舒适节奏
         }
-        // 清理标记
+        // 可选添加一个结束后的清理标记（不用太复杂）
         setTimeout(() => {
             pendingReplyTimers = pendingReplyTimers.filter(t => t._destroyed ? false : true);
         }, delay + 200);
     }
 
-    // 清除所有等待中的定时器
+    // 清理所有等待中的回复定时器（可选，但为了页面卸载时）
     function clearAllPendingTimers() {
         for (let timer of pendingReplyTimers) {
             clearTimeout(timer);
@@ -538,61 +476,61 @@
     function sendUserMessage() {
         let rawText = messageInput.value.trim();
         if (rawText === "") return;
+        // 添加用户消息
         addMessage('user', rawText);
         messageInput.value = "";
         messageInput.focus();
-        // 用户发送后，对方自动随机选字回复（1~3条句子）
-        opponentReplyWithRandomChars();
+        // 用户发送后，对方自动随机使用字卡回复（随机1~3条）
+        opponentReplyWithCards(); // 自动调用，随机条数
     }
 
-    // 手动触发对方随机回话
+    // 手动触发对方随机回话（可以回复多条，纯随机）
     function manualOpponentReply() {
-        const currentLib = getCurrentLibrary();
-        if (currentLib.length === 0) {
-            addMessage('opponent', '📭 还没有汉字库呢，请先在右侧添加一些汉字吧！');
+        const currentCards = getCurrentCardDeck();
+        if (currentCards.length === 0) {
+            addMessage('opponent', '📭 还没有字卡呢，请先在右侧添加一些字卡吧！');
             return;
         }
-        opponentReplyWithRandomChars(); // 随机1~3条句子
+        opponentReplyWithCards(); // 随机1~3条
     }
 
-    // ---------- 汉字库管理 (增删 + 持久化) ----------
-    function saveLibrary() {
-        localStorage.setItem(STORAGE_KEY, JSON.stringify(charLibrary));
+    // ---------- 字卡管理 (增删改查 + 持久化) ----------
+    function saveCardDeck() {
+        localStorage.setItem(STORAGE_KEY, JSON.stringify(cardDeck));
     }
 
-    function loadLibrary() {
+    function loadCardDeck() {
         const stored = localStorage.getItem(STORAGE_KEY);
         if (stored) {
             try {
                 const arr = JSON.parse(stored);
                 if (Array.isArray(arr) && arr.length > 0) {
-                    // 过滤确保每个都是非空字符串且长度为1或2（但最好限制单字，不过允许短词，但按需求我们尽量限制为单字）
-                    // 为了健壮，过滤掉空字符串，并只保留长度<=2的项（但界面限制添加时只允许单字或双字？我们限制添加时只能1~2字，但默认库都是单字）
-                    charLibrary = arr.filter(item => typeof item === 'string' && item.trim().length > 0);
+                    cardDeck = arr;
                     return;
                 }
             } catch(e) { console.warn(e); }
         }
-        // 默认库
-        charLibrary = [...DEFAULT_CHARS];
-        saveLibrary();
+        // 默认数据深拷贝
+        cardDeck = [...DEFAULT_CARDS];
+        saveCardDeck();
     }
 
-    // 渲染右侧汉字列表
+    // 渲染右侧字卡列表
     function renderCardList() {
         if (!cardListContainer) return;
-        if (charLibrary.length === 0) {
-            cardListContainer.innerHTML = `<div class="empty-tip">✨ 暂无汉字，请点击上方添加<br>对方将无法组句回复～</div>`;
+        if (cardDeck.length === 0) {
+            cardListContainer.innerHTML = `<div class="empty-tip">✨ 暂无字卡，请点击上方添加<br>对面将无法回复～</div>`;
             return;
         }
-        const html = charLibrary.map((char, idx) => {
-            const safeChar = escapeHtml(char);
+        const html = cardDeck.map((card, idx) => {
+            // 转义防止XSS
+            const safeCard = escapeHtml(card);
             return `
                 <div class="card-item" data-index="${idx}">
-                    <span class="card-text">「 ${safeChar} 」</span>
+                    <span class="card-text">📄 ${safeCard}</span>
                     <div class="card-actions">
-                        <button class="edit-card" data-index="${idx}" title="修改汉字">✏️</button>
-                        <button class="delete-card" data-index="${idx}" title="删除汉字">🗑️</button>
+                        <button class="edit-card" data-index="${idx}" title="编辑字卡">✏️</button>
+                        <button class="delete-card" data-index="${idx}" title="删除字卡">🗑️</button>
                     </div>
                 </div>
             `;
@@ -604,14 +542,14 @@
             btn.addEventListener('click', (e) => {
                 e.stopPropagation();
                 const idx = parseInt(btn.getAttribute('data-index'), 10);
-                editCharAtIndex(idx);
+                editCardAtIndex(idx);
             });
         });
         document.querySelectorAll('.delete-card').forEach(btn => {
             btn.addEventListener('click', (e) => {
                 e.stopPropagation();
                 const idx = parseInt(btn.getAttribute('data-index'), 10);
-                deleteCharAtIndex(idx);
+                deleteCardAtIndex(idx);
             });
         });
     }
@@ -623,66 +561,69 @@
             if (m === '<') return '&lt;';
             if (m === '>') return '&gt;';
             return m;
+        }).replace(/[\uD800-\uDBFF][\uDC00-\uDFFF]/g, function(c) {
+            return c;
         });
     }
     
-    // 编辑汉字
-    function editCharAtIndex(index) {
-        if (index < 0 || index >= charLibrary.length) return;
-        const oldChar = charLibrary[index];
-        const newChar = prompt(`修改汉字（建议1~2个字）:`, oldChar);
-        if (newChar !== null && newChar.trim() !== "") {
-            const trimmed = newChar.trim();
-            if (trimmed.length <= 2 && trimmed.length >= 1) {
-                charLibrary[index] = trimmed;
-                saveLibrary();
+    // 编辑字卡
+    function editCardAtIndex(index) {
+        if (index < 0 || index >= cardDeck.length) return;
+        const oldText = cardDeck[index];
+        const newText = prompt(`编辑字卡内容:`, oldText);
+        if (newText !== null && newText.trim() !== "") {
+            const trimmed = newText.trim();
+            if (trimmed.length > 0 && trimmed.length <= 80) {
+                cardDeck[index] = trimmed;
+                saveCardDeck();
                 renderCardList();
-                addSystemTip(`✏️ 汉字已更新: “${trimmed}”`);
+                // 可增加轻提示 (不干扰聊天)
+                addSystemTip(`📝 字卡已更新: “${trimmed}”`);
             } else {
-                alert("请输入1~2个汉字");
+                alert("字卡内容需为1~80个字符");
             }
         }
     }
     
-    // 删除汉字
-    function deleteCharAtIndex(index) {
-        if (index < 0 || index >= charLibrary.length) return;
-        const deleted = charLibrary[index];
-        if (confirm(`确定要从汉字库中删除「${deleted}」吗？`)) {
-            charLibrary.splice(index, 1);
-            saveLibrary();
+    // 删除字卡
+    function deleteCardAtIndex(index) {
+        if (index < 0 || index >= cardDeck.length) return;
+        const deletedCard = cardDeck[index];
+        if (confirm(`确定要删除字卡「${deletedCard}」吗？`)) {
+            cardDeck.splice(index, 1);
+            saveCardDeck();
             renderCardList();
-            addSystemTip(`🗑️ 已删除汉字: “${deleted}”`);
-            if (charLibrary.length === 0) {
-                addSystemTip("⚠️ 汉字库已空，对方将无法回复，请添加汉字~");
+            addSystemTip(`🗑️ 已删除字卡: “${deletedCard}”`);
+            // 如果字卡变为空，并且没有回复功能不会有副作用；但下次回复会提示
+            if (cardDeck.length === 0) {
+                addSystemTip("⚠️ 字卡库已空，对方将无法回复，请添加新字卡~");
             }
         }
     }
     
-    // 添加新汉字
-    function addNewChar() {
-        let newText = newCardInput.value.trim();
-        if (newText === "") {
-            alert("请输入汉字（1~2个字）");
+    // 添加新字卡
+    function addNewCard() {
+        let newCardText = newCardInput.value.trim();
+        if (newCardText === "") {
+            alert("字卡内容不能为空");
             return;
         }
-        if (newText.length > 2) {
-            alert("最多添加两个汉字（保持简洁）");
+        if (newCardText.length > 80) {
+            alert("字卡内容太长，请控制在80字符以内");
             return;
         }
-        // 可选去重提醒？不做强制去重，允许重复增加趣味，但提醒一下
-        if (charLibrary.includes(newText)) {
-            if (!confirm(`汉字库中已有「${newText}」，是否仍然添加（允许重复）？`)) return;
-        }
-        charLibrary.push(newText);
-        saveLibrary();
+        // 可选去重? 允许重复，更有随机性
+        cardDeck.push(newCardText);
+        saveCardDeck();
         renderCardList();
         newCardInput.value = "";
-        addSystemTip(`✨ 新汉字“${newText}”已加入库中`);
+        addSystemTip(`✨ 新字卡已加入: “${newCardText}”`);
     }
     
-    // 系统提示消息（淡出）
+    // 系统提示消息（不影响聊天主体，只做提示）
     function addSystemTip(msg) {
+        // 小提示淡入淡出样式？为了不干扰，简单在聊天区顶部显示临时提示? 但最好作为一个普通消息?
+        // 为了更好体验，在聊天区添加一个灰色小提示，不是重要对话，用特殊样式。但不干扰主体，选用短暂通知气泡风格。
         const tipDiv = document.createElement('div');
         tipDiv.style.cssText = 'text-align:center; font-size:0.7rem; color:#b48c68; margin:6px 0; animation:fadeSlideUp 0.2s;';
         tipDiv.innerText = `🔔 ${msg}`;
@@ -690,15 +631,15 @@
         messagesContainer.scrollTop = messagesContainer.scrollHeight;
         setTimeout(() => {
             if(tipDiv.parentNode) tipDiv.remove();
-        }, 2800);
+        }, 2500);
     }
     
-    // 页面关闭前清除定时器
+    // 重置回复定时器（页面关闭时避免执行）
     window.addEventListener('beforeunload', () => {
         clearAllPendingTimers();
     });
     
-    // 绑定事件
+    // 处理回车发送
     function initEventListeners() {
         sendBtn.addEventListener('click', sendUserMessage);
         messageInput.addEventListener('keypress', (e) => {
@@ -708,31 +649,35 @@
             }
         });
         manualReplyBtn.addEventListener('click', () => {
+            // 手动触发对方随机回复（多条）
             manualOpponentReply();
         });
-        addCardBtn.addEventListener('click', addNewChar);
+        addCardBtn.addEventListener('click', addNewCard);
+        // 也可以给新字卡输入框回车添加
         newCardInput.addEventListener('keypress', (e) => {
             if (e.key === 'Enter') {
                 e.preventDefault();
-                addNewChar();
+                addNewCard();
             }
         });
     }
     
-    // 初始化
+    // 额外保险: 在字卡更新时确保外部调用可以继续，无副作用
     function init() {
-        loadLibrary();          // 加载汉字库
-        renderCardList();       // 渲染右侧列表
+        loadCardDeck();          // 加载字卡库 (localStorage 或默认)
+        renderCardList();       // 渲染右侧字卡列表
         initEventListeners();   // 绑定UI事件
-        
-        // 显示初始提示
-        if (charLibrary.length === 0) {
-            addSystemTip("📌 汉字库是空的！请添加一些汉字，对方才能随机选字回复");
+        // 可选: 展示一条欢迎，但不重复添加，因为html已有欢迎消息，无需重复
+        // 确保对方刚进来时字卡库不为空，如果空则提示
+        if (cardDeck.length === 0) {
+            addSystemTip("📌 字卡库是空的！请在右侧添加一些字卡，对方才能回复你哟");
         } else {
-            addSystemTip(`📚 当前汉字库共 ${charLibrary.length} 个汉字，对方将随机选字组句回复`);
+            // 可展示目前字卡数量
+            addSystemTip(`📚 当前字卡库共 ${cardDeck.length} 张字卡，对方将随机选用回复`);
         }
     }
     
+    // 开始
     init();
 </script>
 </body>
