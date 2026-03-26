@@ -1,0 +1,677 @@
+# DengDengt-zr.github.io
+<!DOCTYPE html>
+<html lang="zh-CN">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0, viewport-fit=cover">
+    <title>传讯·随机选字 | 对方以汉字随机组句回复</title>
+    <style>
+        * {
+            margin: 0;
+            padding: 0;
+            box-sizing: border-box;
+        }
+
+        body {
+            background: #e5ddd5;
+            font-family: 'Segoe UI', 'Noto Sans', system-ui, -apple-system, 'PingFang SC', 'Microsoft YaHei', sans-serif;
+            height: 100vh;
+            display: flex;
+            justify-content: center;
+            align-items: center;
+            padding: 16px;
+        }
+
+        /* 主容器 类似现代聊天应用布局 */
+        .app-container {
+            width: 1400px;
+            max-width: 98vw;
+            height: 90vh;
+            max-height: 800px;
+            background: #f7f4ef;
+            border-radius: 32px;
+            box-shadow: 0 20px 40px rgba(0, 0, 0, 0.2);
+            display: flex;
+            overflow: hidden;
+            transition: all 0.2s;
+        }
+
+        /* 左侧聊天区 */
+        .chat-area {
+            flex: 2.2;
+            display: flex;
+            flex-direction: column;
+            background: #efe7dd;
+            border-right: 1px solid rgba(0, 0, 0, 0.08);
+            position: relative;
+        }
+
+        /* 聊天头部 */
+        .chat-header {
+            background: #fff6ed;
+            padding: 16px 24px;
+            border-bottom: 1px solid #e2d5c2;
+            box-shadow: 0 1px 3px rgba(0,0,0,0.05);
+        }
+        .chat-header h2 {
+            font-size: 1.4rem;
+            font-weight: 600;
+            color: #6b4c3b;
+            display: flex;
+            align-items: center;
+            gap: 8px;
+        }
+        .chat-header p {
+            font-size: 0.8rem;
+            color: #b48c6c;
+            margin-top: 4px;
+        }
+
+        /* 消息列表容器 */
+        .messages-container {
+            flex: 1;
+            overflow-y: auto;
+            padding: 20px 18px;
+            display: flex;
+            flex-direction: column;
+            gap: 12px;
+            background: #fcf8f0;
+            scroll-behavior: smooth;
+        }
+
+        /* 消息气泡通用 */
+        .message {
+            display: flex;
+            max-width: 85%;
+            animation: fadeSlideUp 0.2s ease;
+        }
+        .message.user {
+            align-self: flex-end;
+            justify-content: flex-end;
+        }
+        .message.opponent {
+            align-self: flex-start;
+        }
+
+        .bubble {
+            padding: 10px 16px;
+            border-radius: 20px;
+            position: relative;
+            word-break: break-word;
+            box-shadow: 0 1px 1px rgba(0,0,0,0.05);
+        }
+        .user .bubble {
+            background: #d9f0c3;
+            color: #2d3e1f;
+            border-bottom-right-radius: 4px;
+            border-top-right-radius: 20px;
+        }
+        .opponent .bubble {
+            background: white;
+            color: #3a2c23;
+            border-bottom-left-radius: 4px;
+            border-top-left-radius: 20px;
+            border: 1px solid #eedbc8;
+        }
+        .sender-name {
+            font-size: 0.7rem;
+            font-weight: 500;
+            margin-bottom: 4px;
+            opacity: 0.7;
+            display: flex;
+            align-items: center;
+            gap: 6px;
+        }
+        .user .sender-name { justify-content: flex-end; color: #5c7c3a; }
+        .opponent .sender-name { color: #b47342; }
+        .message-time {
+            font-size: 0.65rem;
+            color: #9b7a62;
+            margin-top: 4px;
+            text-align: right;
+        }
+        .opponent .message-time { text-align: left; }
+
+        /* 底部输入栏 */
+        .input-area {
+            background: #fffaf2;
+            padding: 16px 20px;
+            border-top: 1px solid #e6d9cb;
+            display: flex;
+            gap: 12px;
+            align-items: center;
+            flex-wrap: wrap;
+        }
+        .input-wrapper {
+            flex: 1;
+            display: flex;
+            background: white;
+            border-radius: 40px;
+            border: 1px solid #e2cfb6;
+            overflow: hidden;
+            padding: 4px 8px 4px 18px;
+            align-items: center;
+        }
+        .input-wrapper input {
+            flex: 1;
+            border: none;
+            padding: 12px 0;
+            font-size: 1rem;
+            background: transparent;
+            outline: none;
+            font-family: inherit;
+        }
+        .input-wrapper button {
+            background: none;
+            border: none;
+            font-size: 1.5rem;
+            cursor: pointer;
+            padding: 6px 12px;
+            color: #b87c4f;
+            transition: 0.2s;
+        }
+        .input-wrapper button:hover { color: #7b4a2a; transform: scale(1.05);}
+        .extra-buttons {
+            display: flex;
+            gap: 10px;
+        }
+        .icon-btn {
+            background: #e9dccc;
+            border: none;
+            padding: 10px 16px;
+            border-radius: 40px;
+            font-weight: 500;
+            font-size: 0.85rem;
+            cursor: pointer;
+            display: flex;
+            align-items: center;
+            gap: 6px;
+            transition: 0.15s;
+            color: #6b4c2c;
+        }
+        .icon-btn:active { transform: scale(0.96); background: #dacbb4; }
+
+        /* 右侧汉字库管理区 */
+        .cards-panel {
+            flex: 1.2;
+            background: #fffbf5;
+            display: flex;
+            flex-direction: column;
+            overflow-y: auto;
+            padding: 18px 16px;
+            gap: 18px;
+        }
+        .panel-title {
+            font-weight: 700;
+            font-size: 1.2rem;
+            color: #5e3a24;
+            border-left: 5px solid #e2b280;
+            padding-left: 12px;
+            margin-bottom: 6px;
+        }
+        .add-card-area {
+            display: flex;
+            gap: 8px;
+            background: #f3ede3;
+            padding: 12px;
+            border-radius: 28px;
+        }
+        .add-card-area input {
+            flex: 1;
+            padding: 10px 14px;
+            border: 1px solid #decbae;
+            border-radius: 40px;
+            background: white;
+            font-size: 0.9rem;
+            outline: none;
+        }
+        .add-card-area button {
+            background: #cdb28b;
+            border: none;
+            padding: 0 20px;
+            border-radius: 40px;
+            font-weight: bold;
+            color: white;
+            cursor: pointer;
+            transition: 0.1s;
+        }
+        .card-list {
+            display: flex;
+            flex-direction: column;
+            gap: 12px;
+            max-height: 460px;
+            overflow-y: auto;
+            padding-right: 4px;
+        }
+        .card-item {
+            background: #fef7e9;
+            border-radius: 24px;
+            padding: 10px 14px;
+            display: flex;
+            align-items: center;
+            justify-content: space-between;
+            border: 1px solid #f0e2cf;
+            transition: 0.1s;
+        }
+        .card-text {
+            font-size: 1.2rem;
+            font-weight: 500;
+            color: #4e3723;
+            font-family: 'Noto Serif SC', monospace;
+            letter-spacing: 2px;
+        }
+        .card-actions {
+            display: flex;
+            gap: 10px;
+        }
+        .card-actions button {
+            background: none;
+            border: none;
+            font-size: 1.2rem;
+            cursor: pointer;
+            padding: 6px;
+            border-radius: 30px;
+            width: 32px;
+            transition: 0.1s;
+            color: #a9845c;
+        }
+        .card-actions button:hover { background: #e9ddcd; }
+        .empty-tip {
+            color: #bb9a7a;
+            text-align: center;
+            padding: 24px;
+            font-size: 0.9rem;
+        }
+
+        @keyframes fadeSlideUp {
+            from { opacity: 0; transform: translateY(12px);}
+            to { opacity: 1; transform: translateY(0);}
+        }
+
+        ::-webkit-scrollbar { width: 6px; }
+        ::-webkit-scrollbar-track { background: #e8ddcf; border-radius: 8px; }
+        ::-webkit-scrollbar-thumb { background: #c6ab88; border-radius: 8px; }
+
+        @media (max-width: 800px) {
+            .app-container { flex-direction: column; height: 95vh; }
+            .chat-area { flex: 3; border-right: none; border-bottom: 1px solid #ddd0bc; }
+            .cards-panel { flex: 2; }
+            .message { max-width: 90%; }
+        }
+        .replying-tip {
+            font-size: 0.7rem;
+            color: #b8875a;
+            padding-left: 12px;
+        }
+        button:disabled { opacity: 0.5; cursor: default; }
+    </style>
+</head>
+<body>
+<div class="app-container">
+    <!-- 左侧聊天区域 -->
+    <div class="chat-area">
+        <div class="chat-header">
+            <h2>📡 传讯 · 随机选字</h2>
+            <p>💬 你可以随意发送消息 · 对方从「汉字库」中随机选字组成句子回复（1~3句，每句2~6字）</p>
+        </div>
+        <div class="messages-container" id="messagesContainer">
+            <!-- 动态消息 -->
+            <div class="message opponent">
+                <div class="bubble">
+                    <div class="sender-name">🎴 随机字使</div>
+                    你好～ 我会从右侧汉字库里随机挑字组成句子回你！<br>✏️ 你可以自由增删汉字库中的单字。
+                    <div class="message-time">刚刚</div>
+                </div>
+            </div>
+        </div>
+        <div class="input-area">
+            <div class="input-wrapper">
+                <input type="text" id="messageInput" placeholder="输入你想说的话..." autocomplete="off">
+                <button id="sendBtn">➤</button>
+            </div>
+            <div class="extra-buttons">
+                <button class="icon-btn" id="manualReplyBtn">🎲 对方随机回话</button>
+            </div>
+        </div>
+    </div>
+
+    <!-- 右侧汉字库管理区（单字库） -->
+    <div class="cards-panel">
+        <div class="panel-title">📇 汉字库 · 单字集合</div>
+        <div class="add-card-area">
+            <input type="text" id="newCardInput" placeholder="添加单个汉字 (例如: 风)" maxlength="2" autocomplete="off">
+            <button id="addCardBtn">➕ 添加</button>
+        </div>
+        <div style="font-size:0.7rem; color:#b48a62; margin: 0 8px;">✨ 对方每次回复会从下方汉字中随机选字组句 (每句2~6个字，随机1~3句)</div>
+        <div class="card-list" id="cardListContainer">
+            <!-- 动态渲染汉字列表 -->
+        </div>
+        <div class="replying-tip">⚡ 示例: 库中有「日,月,山,水」，可能回复「山水日月」或「月山水」等</div>
+    </div>
+</div>
+
+<script>
+    // ---------- 存储 KEY ----------
+    const STORAGE_KEY = 'random_char_library';
+
+    // ---------- 默认汉字库 (常用单字) ----------
+    const DEFAULT_CHARS = [
+        "日", "月", "山", "水", "风", "云", "雨", "雪", 
+        "花", "鸟", "鱼", "虫", "天", "地", "人", "和", 
+        "春", "夏", "秋", "冬", "江", "河", "湖", "海"
+    ];
+
+    // ---------- 全局变量 ----------
+    let charLibrary = [];        // 存储单个汉字字符串数组
+    let pendingReplyTimers = []; // 存储定时器
+
+    // DOM 元素
+    const messagesContainer = document.getElementById('messagesContainer');
+    const messageInput = document.getElementById('messageInput');
+    const sendBtn = document.getElementById('sendBtn');
+    const manualReplyBtn = document.getElementById('manualReplyBtn');
+    const cardListContainer = document.getElementById('cardListContainer');
+    const newCardInput = document.getElementById('newCardInput');
+    const addCardBtn = document.getElementById('addCardBtn');
+
+    // ---------- 辅助函数 ----------
+    // 获取当前时间字符串 HH:MM
+    function getTimeStr() {
+        const now = new Date();
+        return `${now.getHours().toString().padStart(2,'0')}:${now.getMinutes().toString().padStart(2,'0')}`;
+    }
+
+    // 添加一条消息 (sender: 'user' 或 'opponent', text: 内容)
+    function addMessage(sender, text, isSystem = false) {
+        const messageDiv = document.createElement('div');
+        messageDiv.className = `message ${sender}`;
+        const bubble = document.createElement('div');
+        bubble.className = 'bubble';
+        
+        const nameSpan = document.createElement('div');
+        nameSpan.className = 'sender-name';
+        if (sender === 'user') {
+            nameSpan.innerHTML = '🧑 我 · 说';
+        } else {
+            nameSpan.innerHTML = '🎴 随机字使 · 回';
+        }
+        
+        const contentSpan = document.createElement('div');
+        contentSpan.style.whiteSpace = 'pre-wrap';
+        contentSpan.innerText = text;
+        
+        const timeSpan = document.createElement('div');
+        timeSpan.className = 'message-time';
+        timeSpan.innerText = getTimeStr();
+        
+        bubble.appendChild(nameSpan);
+        bubble.appendChild(contentSpan);
+        bubble.appendChild(timeSpan);
+        messageDiv.appendChild(bubble);
+        messagesContainer.appendChild(messageDiv);
+        // 滚动到底部
+        messagesContainer.scrollTop = messagesContainer.scrollHeight;
+        return messageDiv;
+    }
+
+    // 从汉字库中随机生成一个句子 (随机2~6个字)
+    function generateRandomSentence() {
+        const lib = getCurrentLibrary();
+        if (lib.length === 0) return null;
+        // 随机字数 2~6
+        const wordCount = Math.floor(Math.random() * 5) + 2; // 2,3,4,5,6
+        let sentence = "";
+        for (let i = 0; i < wordCount; i++) {
+            const randomIndex = Math.floor(Math.random() * lib.length);
+            sentence += lib[randomIndex];
+        }
+        return sentence;
+    }
+
+    // 获取当前汉字库 (实时)
+    function getCurrentLibrary() {
+        return [...charLibrary];
+    }
+
+    // 对方随机回复（使用汉字库组句）
+    // 回复条数：随机1~3条，每条为一个由汉字库随机拼接的句子（2~6个字）
+    function opponentReplyWithRandomChars(customCount = null) {
+        const currentLib = getCurrentLibrary();
+        if (currentLib.length === 0) {
+            addMessage('opponent', '⚠️ 汉字库空空如也，请在右侧添加一些汉字，我才能随机选字回你～');
+            return;
+        }
+        
+        let replyCount = customCount;
+        if (replyCount === null || replyCount === undefined) {
+            replyCount = Math.floor(Math.random() * 3) + 1; // 1,2,3
+        }
+        replyCount = Math.max(1, replyCount);
+        
+        let delay = 0;
+        for (let i = 0; i < replyCount; i++) {
+            const sentence = generateRandomSentence();
+            if (sentence === null) break; // 库为空已在前面拦截
+            const timer = setTimeout(() => {
+                addMessage('opponent', sentence);
+            }, delay);
+            pendingReplyTimers.push(timer);
+            delay += 420; // 间隔0.42秒，有节奏感
+        }
+        // 清理标记
+        setTimeout(() => {
+            pendingReplyTimers = pendingReplyTimers.filter(t => t._destroyed ? false : true);
+        }, delay + 200);
+    }
+
+    // 清除所有等待中的定时器
+    function clearAllPendingTimers() {
+        for (let timer of pendingReplyTimers) {
+            clearTimeout(timer);
+        }
+        pendingReplyTimers = [];
+    }
+
+    // 用户发送消息主逻辑
+    function sendUserMessage() {
+        let rawText = messageInput.value.trim();
+        if (rawText === "") return;
+        addMessage('user', rawText);
+        messageInput.value = "";
+        messageInput.focus();
+        // 用户发送后，对方自动随机选字回复（1~3条句子）
+        opponentReplyWithRandomChars();
+    }
+
+    // 手动触发对方随机回话
+    function manualOpponentReply() {
+        const currentLib = getCurrentLibrary();
+        if (currentLib.length === 0) {
+            addMessage('opponent', '📭 还没有汉字库呢，请先在右侧添加一些汉字吧！');
+            return;
+        }
+        opponentReplyWithRandomChars(); // 随机1~3条句子
+    }
+
+    // ---------- 汉字库管理 (增删 + 持久化) ----------
+    function saveLibrary() {
+        localStorage.setItem(STORAGE_KEY, JSON.stringify(charLibrary));
+    }
+
+    function loadLibrary() {
+        const stored = localStorage.getItem(STORAGE_KEY);
+        if (stored) {
+            try {
+                const arr = JSON.parse(stored);
+                if (Array.isArray(arr) && arr.length > 0) {
+                    // 过滤确保每个都是非空字符串且长度为1或2（但最好限制单字，不过允许短词，但按需求我们尽量限制为单字）
+                    // 为了健壮，过滤掉空字符串，并只保留长度<=2的项（但界面限制添加时只允许单字或双字？我们限制添加时只能1~2字，但默认库都是单字）
+                    charLibrary = arr.filter(item => typeof item === 'string' && item.trim().length > 0);
+                    return;
+                }
+            } catch(e) { console.warn(e); }
+        }
+        // 默认库
+        charLibrary = [...DEFAULT_CHARS];
+        saveLibrary();
+    }
+
+    // 渲染右侧汉字列表
+    function renderCardList() {
+        if (!cardListContainer) return;
+        if (charLibrary.length === 0) {
+            cardListContainer.innerHTML = `<div class="empty-tip">✨ 暂无汉字，请点击上方添加<br>对方将无法组句回复～</div>`;
+            return;
+        }
+        const html = charLibrary.map((char, idx) => {
+            const safeChar = escapeHtml(char);
+            return `
+                <div class="card-item" data-index="${idx}">
+                    <span class="card-text">「 ${safeChar} 」</span>
+                    <div class="card-actions">
+                        <button class="edit-card" data-index="${idx}" title="修改汉字">✏️</button>
+                        <button class="delete-card" data-index="${idx}" title="删除汉字">🗑️</button>
+                    </div>
+                </div>
+            `;
+        }).join('');
+        cardListContainer.innerHTML = html;
+        
+        // 绑定编辑/删除事件
+        document.querySelectorAll('.edit-card').forEach(btn => {
+            btn.addEventListener('click', (e) => {
+                e.stopPropagation();
+                const idx = parseInt(btn.getAttribute('data-index'), 10);
+                editCharAtIndex(idx);
+            });
+        });
+        document.querySelectorAll('.delete-card').forEach(btn => {
+            btn.addEventListener('click', (e) => {
+                e.stopPropagation();
+                const idx = parseInt(btn.getAttribute('data-index'), 10);
+                deleteCharAtIndex(idx);
+            });
+        });
+    }
+    
+    // 简单防XSS
+    function escapeHtml(str) {
+        return str.replace(/[&<>]/g, function(m) {
+            if (m === '&') return '&amp;';
+            if (m === '<') return '&lt;';
+            if (m === '>') return '&gt;';
+            return m;
+        });
+    }
+    
+    // 编辑汉字
+    function editCharAtIndex(index) {
+        if (index < 0 || index >= charLibrary.length) return;
+        const oldChar = charLibrary[index];
+        const newChar = prompt(`修改汉字（建议1~2个字）:`, oldChar);
+        if (newChar !== null && newChar.trim() !== "") {
+            const trimmed = newChar.trim();
+            if (trimmed.length <= 2 && trimmed.length >= 1) {
+                charLibrary[index] = trimmed;
+                saveLibrary();
+                renderCardList();
+                addSystemTip(`✏️ 汉字已更新: “${trimmed}”`);
+            } else {
+                alert("请输入1~2个汉字");
+            }
+        }
+    }
+    
+    // 删除汉字
+    function deleteCharAtIndex(index) {
+        if (index < 0 || index >= charLibrary.length) return;
+        const deleted = charLibrary[index];
+        if (confirm(`确定要从汉字库中删除「${deleted}」吗？`)) {
+            charLibrary.splice(index, 1);
+            saveLibrary();
+            renderCardList();
+            addSystemTip(`🗑️ 已删除汉字: “${deleted}”`);
+            if (charLibrary.length === 0) {
+                addSystemTip("⚠️ 汉字库已空，对方将无法回复，请添加汉字~");
+            }
+        }
+    }
+    
+    // 添加新汉字
+    function addNewChar() {
+        let newText = newCardInput.value.trim();
+        if (newText === "") {
+            alert("请输入汉字（1~2个字）");
+            return;
+        }
+        if (newText.length > 2) {
+            alert("最多添加两个汉字（保持简洁）");
+            return;
+        }
+        // 可选去重提醒？不做强制去重，允许重复增加趣味，但提醒一下
+        if (charLibrary.includes(newText)) {
+            if (!confirm(`汉字库中已有「${newText}」，是否仍然添加（允许重复）？`)) return;
+        }
+        charLibrary.push(newText);
+        saveLibrary();
+        renderCardList();
+        newCardInput.value = "";
+        addSystemTip(`✨ 新汉字“${newText}”已加入库中`);
+    }
+    
+    // 系统提示消息（淡出）
+    function addSystemTip(msg) {
+        const tipDiv = document.createElement('div');
+        tipDiv.style.cssText = 'text-align:center; font-size:0.7rem; color:#b48c68; margin:6px 0; animation:fadeSlideUp 0.2s;';
+        tipDiv.innerText = `🔔 ${msg}`;
+        messagesContainer.appendChild(tipDiv);
+        messagesContainer.scrollTop = messagesContainer.scrollHeight;
+        setTimeout(() => {
+            if(tipDiv.parentNode) tipDiv.remove();
+        }, 2800);
+    }
+    
+    // 页面关闭前清除定时器
+    window.addEventListener('beforeunload', () => {
+        clearAllPendingTimers();
+    });
+    
+    // 绑定事件
+    function initEventListeners() {
+        sendBtn.addEventListener('click', sendUserMessage);
+        messageInput.addEventListener('keypress', (e) => {
+            if (e.key === 'Enter') {
+                e.preventDefault();
+                sendUserMessage();
+            }
+        });
+        manualReplyBtn.addEventListener('click', () => {
+            manualOpponentReply();
+        });
+        addCardBtn.addEventListener('click', addNewChar);
+        newCardInput.addEventListener('keypress', (e) => {
+            if (e.key === 'Enter') {
+                e.preventDefault();
+                addNewChar();
+            }
+        });
+    }
+    
+    // 初始化
+    function init() {
+        loadLibrary();          // 加载汉字库
+        renderCardList();       // 渲染右侧列表
+        initEventListeners();   // 绑定UI事件
+        
+        // 显示初始提示
+        if (charLibrary.length === 0) {
+            addSystemTip("📌 汉字库是空的！请添加一些汉字，对方才能随机选字回复");
+        } else {
+            addSystemTip(`📚 当前汉字库共 ${charLibrary.length} 个汉字，对方将随机选字组句回复`);
+        }
+    }
+    
+    init();
+</script>
+</body>
+</html>
