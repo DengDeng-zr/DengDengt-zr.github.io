@@ -1,684 +1,1157 @@
-# DengDengt-zr.github.io
 <!DOCTYPE html>
 <html lang="zh-CN">
 <head>
-    <meta charset="UTF-8">
-    <meta name="viewport" content="width=device-width, initial-scale=1.0, viewport-fit=cover">
-    <title>传讯·字卡回廊 | 对方只能字卡回复</title>
-    <style>
-        * {
-            margin: 0;
-            padding: 0;
-            box-sizing: border-box;
-        }
+<meta charset="UTF-8">
+<meta name="viewport" content="width=device-width,initial-scale=1,maximum-scale=1,user-scalable=no,viewport-fit=cover">
+<title>暖信</title>
+<style>
+:root {
+  --bg: #ededed;
+  --card: #fff;
+  --sent: #95ec69;
+  --received: #fff;
+  --text: #191919;
+  --text2: #888;
+  --border: #e5e5e5;
+  --tab-on: #07c160;
+  --tab-off: #666;
+  --link: #576b95;
+  --danger: #e74c3c;
+}
+* { margin:0; padding:0; box-sizing:border-box; }
+html,body { height:100%; overflow:hidden; background:#d5d5d5; }
+body {
+  font-family:-apple-system,BlinkMacSystemFont,"PingFang SC","Microsoft YaHei",sans-serif;
+  color:var(--text); -webkit-tap-highlight-color:transparent;
+  -webkit-font-smoothing:antialiased; font-size:15px;
+}
+#app { width:100%; height:100%; background:var(--bg); display:flex; flex-direction:column; position:relative; overflow:hidden; }
+@media(min-width:768px){
+  #app { flex-direction:row; }
+  #tabbar { width:70px; flex-direction:column !important; height:100%; border-right:1px solid var(--border); border-top:none !important; flex-shrink:0; padding-top:8px; }
+  #tabbar button { padding:12px 0 !important; font-size:10px !important; }
+  #tabbar button .ico { font-size:22px !important; }
+  #app .page { flex:1; border-right:1px solid var(--border); max-width:380px; }
+  #chat-view { position:relative !important; flex:1; transform:none !important; border-left:1px solid var(--border); }
+  #chat-view:not(.open) { display:none; }
+  #chat-view.open { display:flex; }
+  #chat-view::before { content:'选择一个聊天'; display:none; position:absolute; top:50%; left:50%; transform:translate(-50%,-50%); color:var(--text2); font-size:16px; }
+  #chat-view:not(.open) { display:flex; align-items:center; justify-content:center; }
+  #chat-view:not(.open)::before { display:block; }
+  #chat-view:not(.open) > * { display:none; }
+  #chat-view.open::before { display:none; }
+  #chat-view.open > * { display:flex; }
+  .page { padding-bottom:0 !important; }
+  .cv-hd .back { display:none; }
+  .input-bar { padding-bottom:8px !important; }
+}
+.hd { height:44px; display:flex; align-items:center; justify-content:center; background:var(--bg); font-size:17px; font-weight:600; flex-shrink:0; padding:0 16px; position:relative; border-bottom:1px solid var(--border); }
+.hd .hdr { position:absolute; right:10px; top:50%; transform:translateY(-50%); background:none; border:none; font-size:18px; color:var(--text); cursor:pointer; padding:4px 8px; }
+.hd .hdl { position:absolute; left:4px; top:50%; transform:translateY(-50%); background:none; border:none; font-size:18px; color:var(--text); cursor:pointer; padding:4px 8px; }
+.page { flex:1; overflow-y:auto; display:none; -webkit-overflow-scrolling:touch; padding-bottom:50px; }
+.page.on { display:block; }
 
-        body {
-            background: #e5ddd5;
-            font-family: 'Segoe UI', 'Noto Sans', system-ui, -apple-system, 'PingFang SC', 'Microsoft YaHei', sans-serif;
-            height: 100vh;
-            display: flex;
-            justify-content: center;
-            align-items: center;
-            padding: 16px;
-        }
+/* Chat list */
+.chat-item { display:flex; align-items:center; padding:12px 16px; gap:10px; cursor:pointer; background:var(--card); border-bottom:1px solid #f0f0f0; }
+.chat-item:active { background:#f5f5f5; }
+.av { width:44px; height:44px; border-radius:6px; flex-shrink:0; display:flex; align-items:center; justify-content:center; font-size:18px; font-weight:600; color:#fff; overflow:hidden; background:#d9d9d9; }
+.av img { width:100%; height:100%; object-fit:cover; }
+.ci { flex:1; min-width:0; }
+.cn { font-size:15px; margin-bottom:2px; display:flex; align-items:center; gap:4px; }
+.cp { font-size:12px; color:var(--text2); white-space:nowrap; overflow:hidden; text-overflow:ellipsis; }
+.cm { text-align:right; flex-shrink:0; }
+.ct { font-size:11px; color:var(--text2); }
+.badge { background:var(--danger); color:#fff; font-size:11px; min-width:18px; height:18px; line-height:18px; border-radius:9px; text-align:center; padding:0 5px; display:inline-block; margin-top:2px; }
 
-        /* 主容器 类似现代聊天应用布局 */
-        .app-container {
-            width: 1400px;
-            max-width: 98vw;
-            height: 90vh;
-            max-height: 800px;
-            background: #f7f4ef;
-            border-radius: 32px;
-            box-shadow: 0 20px 40px rgba(0, 0, 0, 0.2);
-            display: flex;
-            overflow: hidden;
-            backdrop-filter: blur(0px);
-            transition: all 0.2s;
-        }
+/* Contacts */
+.cl { font-size:12px; color:var(--text2); padding:4px 16px; background:var(--bg); }
+.ct-item { display:flex; align-items:center; padding:10px 16px; gap:10px; cursor:pointer; background:var(--card); border-bottom:1px solid #f0f0f0; }
+.ct-item:active { background:#f5f5f5; }
 
-        /* 左侧聊天区 */
-        .chat-area {
-            flex: 2.2;
-            display: flex;
-            flex-direction: column;
-            background: #efe7dd;
-            border-right: 1px solid rgba(0, 0, 0, 0.08);
-            position: relative;
-        }
+/* Moments */
+.m-item { background:var(--card); padding:14px 16px; margin-bottom:8px; }
+.m-hd { display:flex; align-items:center; gap:10px; margin-bottom:8px; }
+.m-av { width:40px; height:40px; border-radius:6px; display:flex; align-items:center; justify-content:center; font-size:16px; font-weight:600; color:#fff; overflow:hidden; background:#d9d9d9; }
+.m-av img { width:100%; height:100%; object-fit:cover; }
+.m-name { font-weight:600; font-size:14px; }
+.m-time { font-size:11px; color:var(--text2); }
+.m-content { font-size:15px; line-height:1.5; margin-bottom:8px; }
+.m-img { max-width:100%; border-radius:4px; margin-bottom:8px; }
+.m-acts { display:flex; gap:20px; padding-top:6px; border-top:1px solid #f0f0f0; }
+.m-acts span { font-size:13px; color:var(--text2); cursor:pointer; }
+.m-cmts { margin-top:6px; background:#f7f7f7; padding:6px 10px; font-size:13px; }
+.m-cmts .n { font-weight:600; color:var(--link); }
 
-        /* 聊天头部 */
-        .chat-header {
-            background: #fff6ed;
-            padding: 16px 24px;
-            border-bottom: 1px solid #e2d5c2;
-            box-shadow: 0 1px 3px rgba(0,0,0,0.05);
-        }
-        .chat-header h2 {
-            font-size: 1.4rem;
-            font-weight: 600;
-            color: #6b4c3b;
-            display: flex;
-            align-items: center;
-            gap: 8px;
-        }
-        .chat-header p {
-            font-size: 0.8rem;
-            color: #b48c6c;
-            margin-top: 4px;
-        }
+/* Me */
+.pf-card { display:flex; align-items:center; gap:14px; padding:24px 16px; background:var(--card); cursor:pointer; margin-bottom:12px; }
+.pf-av { width:64px; height:64px; border-radius:8px; display:flex; align-items:center; justify-content:center; font-size:26px; font-weight:600; color:#fff; overflow:hidden; background:#d9d9d9; }
+.pf-av img { width:100%; height:100%; object-fit:cover; }
+.pf-name { font-size:18px; font-weight:600; }
+.pf-st { font-size:12px; color:var(--text2); margin-top:2px; }
+.mg { margin-bottom:12px; }
+.menu-item { display:flex; align-items:center; justify-content:space-between; padding:13px 16px; background:var(--card); font-size:15px; border-bottom:1px solid #f0f0f0; cursor:pointer; }
+.menu-item:active { background:#f5f5f5; }
+.menu-item .arr { color:#ccc; font-size:16px; }
 
-        /* 消息列表容器 */
-        .messages-container {
-            flex: 1;
-            overflow-y: auto;
-            padding: 20px 18px;
-            display: flex;
-            flex-direction: column;
-            gap: 12px;
-            background: #fcf8f0;
-            scroll-behavior: smooth;
-        }
+/* Chat view */
+#chat-view { position:absolute; top:0; left:0; right:0; bottom:0; background:var(--bg); display:flex; flex-direction:column; transform:translateX(100%); transition:transform .25s ease; z-index:40; }
+#chat-view.open { transform:translateX(0); }
+.cv-hd { height:44px; display:flex; align-items:center; padding:0 8px; background:var(--bg); border-bottom:1px solid var(--border); gap:4px; flex-shrink:0; }
+.cv-hd .back { background:none; border:none; font-size:20px; color:var(--text); cursor:pointer; padding:4px 8px; }
+.cv-hd .titles { flex:1; text-align:center; min-width:0; }
+.cv-hd .tname { font-weight:600; font-size:16px; }
+.cv-hd .ttyping { font-size:13px; color:var(--text2); display:none; }
+.cv-hd .ttyping .dots::after { content:''; animation:dots 1.5s steps(4,end) infinite; }
+@keyframes dots { 0%{content:''} 25%{content:'.'} 50%{content:'..'} 75%{content:'...'} 100%{content:''} }
+.cv-hd .more { background:none; border:none; font-size:20px; color:var(--text); cursor:pointer; padding:4px 8px; }
+.msgs { flex:1; overflow-y:auto; padding:10px 14px; display:flex; flex-direction:column; gap:8px; -webkit-overflow-scrolling:touch; }
+.msg-row { display:flex; gap:6px; max-width:75%; }
+.msg-row.me { align-self:flex-end; flex-direction:row-reverse; }
+.msg-row.you { align-self:flex-start; }
+.msg-bbl { padding:9px 12px; border-radius:6px; font-size:15px; line-height:1.45; word-break:break-word; }
+.me .msg-bbl { background:var(--sent); border-top-right-radius:2px; }
+.you .msg-bbl { background:var(--received); border-top-left-radius:2px; }
+.msg-av { width:34px; height:34px; border-radius:4px; flex-shrink:0; display:flex; align-items:center; justify-content:center; font-size:14px; font-weight:600; color:#fff; overflow:hidden; background:#d9d9d9; align-self:flex-end; }
+.msg-av img { width:100%; height:100%; object-fit:cover; }
+.msg-nm { font-size:10px; color:var(--text2); margin-bottom:2px; }
+.msg-img { max-width:160px; max-height:160px; border-radius:4px; display:block; cursor:pointer; }
+.input-bar { padding:8px 10px; background:#f7f7f7; border-top:1px solid var(--border); display:flex; gap:8px; align-items:flex-end; flex-shrink:0; padding-bottom:calc(8px + env(safe-area-inset-bottom)); }
+.input-bar textarea { flex:1; border:1px solid var(--border); border-radius:6px; padding:8px 10px; font-size:15px; outline:none; resize:none; background:var(--card); font-family:inherit; max-height:80px; line-height:1.4; }
+.input-bar textarea:focus { border-color:var(--tab-on); }
+.input-bar .snd { background:var(--tab-on); color:#fff; border:none; border-radius:6px; padding:8px 16px; font-size:14px; cursor:pointer; flex-shrink:0; }
+.input-bar .snd:active { opacity:.8; }
 
-        /* 消息气泡通用 */
-        .message {
-            display: flex;
-            max-width: 85%;
-            animation: fadeSlideUp 0.2s ease;
-        }
-        .message.user {
-            align-self: flex-end;
-            justify-content: flex-end;
-        }
-        .message.opponent {
-            align-self: flex-start;
-        }
+/* Chat menu dropdown */
+.cv-menu { position:absolute; top:44px; right:8px; background:var(--card); border-radius:8px; box-shadow:0 4px 16px rgba(0,0,0,.12); z-index:25; display:none; min-width:160px; overflow:hidden; }
+.cv-menu.show { display:block; }
+.cv-menu div { padding:12px 16px; font-size:14px; cursor:pointer; border-bottom:1px solid #f0f0f0; }
+.cv-menu div:last-child { border-bottom:none; }
+.cv-menu div:active { background:#f5f5f5; }
 
-        .bubble {
-            padding: 10px 16px;
-            border-radius: 20px;
-            position: relative;
-            word-break: break-word;
-            box-shadow: 0 1px 1px rgba(0,0,0,0.05);
-        }
-        .user .bubble {
-            background: #d9f0c3;
-            color: #2d3e1f;
-            border-bottom-right-radius: 4px;
-            border-top-right-radius: 20px;
-        }
-        .opponent .bubble {
-            background: white;
-            color: #3a2c23;
-            border-bottom-left-radius: 4px;
-            border-top-left-radius: 20px;
-            border: 1px solid #eedbc8;
-        }
-        .sender-name {
-            font-size: 0.7rem;
-            font-weight: 500;
-            margin-bottom: 4px;
-            opacity: 0.7;
-            display: flex;
-            align-items: center;
-            gap: 6px;
-        }
-        .user .sender-name { justify-content: flex-end; color: #5c7c3a; }
-        .opponent .sender-name { color: #b47342; }
-        .message-time {
-            font-size: 0.65rem;
-            color: #9b7a62;
-            margin-top: 4px;
-            text-align: right;
-        }
-        .opponent .message-time { text-align: left; }
+/* Tab bar */
+#tabbar { display:flex; background:#f7f7f7; border-top:1px solid var(--border); flex-shrink:0; padding-bottom:env(safe-area-inset-bottom); z-index:30; }
+#tabbar button { flex:1; background:none; border:none; padding:6px 0 4px; cursor:pointer; font-size:10px; text-align:center; color:var(--tab-off); }
+#tabbar button .ico { font-size:20px; display:block; margin-bottom:1px; }
+#tabbar button.on { color:var(--tab-on); }
 
-        /* 底部输入栏 */
-        .input-area {
-            background: #fffaf2;
-            padding: 16px 20px;
-            border-top: 1px solid #e6d9cb;
-            display: flex;
-            gap: 12px;
-            align-items: center;
-            flex-wrap: wrap;
-        }
-        .input-wrapper {
-            flex: 1;
-            display: flex;
-            background: white;
-            border-radius: 40px;
-            border: 1px solid #e2cfb6;
-            overflow: hidden;
-            padding: 4px 8px 4px 18px;
-            align-items: center;
-        }
-        .input-wrapper input {
-            flex: 1;
-            border: none;
-            padding: 12px 0;
-            font-size: 1rem;
-            background: transparent;
-            outline: none;
-            font-family: inherit;
-        }
-        .input-wrapper button {
-            background: none;
-            border: none;
-            font-size: 1.5rem;
-            cursor: pointer;
-            padding: 6px 12px;
-            color: #b87c4f;
-            transition: 0.2s;
-        }
-        .input-wrapper button:hover { color: #7b4a2a; transform: scale(1.05);}
-        .extra-buttons {
-            display: flex;
-            gap: 10px;
-        }
-        .icon-btn {
-            background: #e9dccc;
-            border: none;
-            padding: 10px 16px;
-            border-radius: 40px;
-            font-weight: 500;
-            font-size: 0.85rem;
-            cursor: pointer;
-            display: flex;
-            align-items: center;
-            gap: 6px;
-            transition: 0.15s;
-            color: #6b4c2c;
-        }
-        .icon-btn:active { transform: scale(0.96); background: #dacbb4; }
+/* Modal */
+.modal-bg { position:fixed; top:0; left:0; right:0; bottom:0; background:rgba(0,0,0,.4); z-index:100; display:none; align-items:flex-end; justify-content:center; }
+.modal-bg.open { display:flex; }
+.modal { background:var(--card); border-radius:12px 12px 0 0; width:100%; max-width:480px; max-height:85vh; display:flex; flex-direction:column; animation:up .25s ease; }
+@keyframes up { from{transform:translateY(100%)} to{transform:translateY(0)} }
+.modal-hd { display:flex; align-items:center; justify-content:space-between; padding:12px 16px; border-bottom:1px solid var(--border); flex-shrink:0; }
+.modal-hd h3 { font-size:15px; font-weight:600; }
+.modal-close { background:none; border:none; font-size:18px; color:var(--text2); cursor:pointer; }
+.modal-body { flex:1; overflow-y:auto; padding:14px 16px; }
+.modal-ft { padding:10px 16px; border-top:1px solid var(--border); display:flex; gap:8px; flex-shrink:0; }
+.btn { padding:8px 18px; border-radius:6px; font-size:14px; cursor:pointer; border:none; font-family:inherit; font-weight:500; }
+.btn-p { background:var(--tab-on); color:#fff; } .btn-p:active { opacity:.8; }
+.btn-o { background:transparent; border:1px solid var(--border); color:var(--text); } .btn-o:active { background:#f5f5f5; }
+.btn-d { background:var(--danger); color:#fff; } .btn-d:active { opacity:.8; }
+.btn-s { padding:4px 10px; font-size:12px; border-radius:4px; }
+.fg { margin-bottom:12px; }
+.fl { font-size:12px; color:var(--text2); margin-bottom:3px; display:block; }
+.fi { width:100%; padding:8px 10px; border:1px solid var(--border); border-radius:6px; font-size:14px; background:var(--card); font-family:inherit; outline:none; }
+.fi:focus { border-color:var(--tab-on); }
+.fr { display:flex; gap:6px; align-items:center; }
+.fr .fi { flex:1; }
 
-        /* 右侧字卡管理区 */
-        .cards-panel {
-            flex: 1.2;
-            background: #fffbf5;
-            display: flex;
-            flex-direction: column;
-            overflow-y: auto;
-            padding: 18px 16px;
-            gap: 18px;
-        }
-        .panel-title {
-            font-weight: 700;
-            font-size: 1.2rem;
-            color: #5e3a24;
-            border-left: 5px solid #e2b280;
-            padding-left: 12px;
-            margin-bottom: 6px;
-        }
-        .add-card-area {
-            display: flex;
-            gap: 8px;
-            background: #f3ede3;
-            padding: 12px;
-            border-radius: 28px;
-        }
-        .add-card-area input {
-            flex: 1;
-            padding: 10px 14px;
-            border: 1px solid #decbae;
-            border-radius: 40px;
-            background: white;
-            font-size: 0.9rem;
-            outline: none;
-        }
-        .add-card-area button {
-            background: #cdb28b;
-            border: none;
-            padding: 0 20px;
-            border-radius: 40px;
-            font-weight: bold;
-            color: white;
-            cursor: pointer;
-            transition: 0.1s;
-        }
-        .card-list {
-            display: flex;
-            flex-direction: column;
-            gap: 12px;
-            max-height: 460px;
-            overflow-y: auto;
-            padding-right: 4px;
-        }
-        .card-item {
-            background: #fef7e9;
-            border-radius: 24px;
-            padding: 10px 14px;
-            display: flex;
-            align-items: center;
-            justify-content: space-between;
-            border: 1px solid #f0e2cf;
-            transition: 0.1s;
-        }
-        .card-text {
-            font-size: 1rem;
-            font-weight: 500;
-            color: #4e3723;
-            word-break: break-word;
-            max-width: 70%;
-        }
-        .card-actions {
-            display: flex;
-            gap: 10px;
-        }
-        .card-actions button {
-            background: none;
-            border: none;
-            font-size: 1.2rem;
-            cursor: pointer;
-            padding: 6px;
-            border-radius: 30px;
-            width: 32px;
-            transition: 0.1s;
-            color: #a9845c;
-        }
-        .card-actions button:hover { background: #e9ddcd; }
-        .empty-tip {
-            color: #bb9a7a;
-            text-align: center;
-            padding: 24px;
-            font-size: 0.9rem;
-        }
+/* Card editor */
+.ce { display:flex; height:45vh; border:1px solid var(--border); border-radius:8px; overflow:hidden; }
+.ce-l { width:110px; border-right:1px solid var(--border); overflow-y:auto; flex-shrink:0; background:#fafafa; }
+.ce-l .gi { padding:10px 12px; cursor:pointer; font-size:13px; border-bottom:1px solid #f0f0f0; }
+.ce-l .gi.on { background:#e6f9ed; color:var(--tab-on); font-weight:600; }
+.ce-r { flex:1; overflow-y:auto; padding:8px; }
+.card-tag { display:inline-flex; align-items:center; gap:3px; background:#f7f7f7; border:1px solid var(--border); padding:3px 8px; border-radius:12px; margin:3px; font-size:12px; cursor:pointer; vertical-align:middle; }
+.card-tag:active { background:#e5e5e5; }
+.card-tag .x { color:var(--danger); font-weight:bold; }
+.card-tag img { width:30px; height:30px; border-radius:3px; object-fit:cover; }
 
-        @keyframes fadeSlideUp {
-            from { opacity: 0; transform: translateY(12px);}
-            to { opacity: 1; transform: translateY(0);}
-        }
-
-        /* 滚动条 */
-        ::-webkit-scrollbar { width: 6px; }
-        ::-webkit-scrollbar-track { background: #e8ddcf; border-radius: 8px; }
-        ::-webkit-scrollbar-thumb { background: #c6ab88; border-radius: 8px; }
-
-        @media (max-width: 800px) {
-            .app-container { flex-direction: column; height: 95vh; }
-            .chat-area { flex: 3; border-right: none; border-bottom: 1px solid #ddd0bc; }
-            .cards-panel { flex: 2; }
-            .message { max-width: 90%; }
-        }
-        .replying-tip {
-            font-size: 0.7rem;
-            color: #b8875a;
-            padding-left: 12px;
-        }
-        button:disabled { opacity: 0.5; cursor: default; }
-    </style>
+/* Call */
+#call-v { position:fixed; top:0; left:0; right:0; bottom:0; background:#3a3a3a; z-index:200; display:none; flex-direction:column; align-items:center; justify-content:center; gap:16px; color:#fff; }
+#call-v.open { display:flex; }
+.call-av { width:72px; height:72px; border-radius:16px; display:flex; align-items:center; justify-content:center; font-size:28px; font-weight:600; color:#fff; overflow:hidden; background:#555; }
+.call-av img { width:100%; height:100%; object-fit:cover; }
+.call-nm { font-size:18px; font-weight:600; }
+.call-st { font-size:14px; color:#ccc; }
+.call-tm { font-size:16px; font-variant-numeric:tabular-nums; }
+.call-btns { display:flex; gap:20px; margin-top:20px; }
+.call-c { width:52px; height:52px; border-radius:50%; border:none; font-size:22px; cursor:pointer; display:flex; align-items:center; justify-content:center; }
+.call-end { background:#e74c3c; color:#fff; }
+.call-ans { background:var(--tab-on); color:#fff; }
+.icall { position:fixed; top:16px; left:50%; transform:translateX(-50%); z-index:250; background:#fff; border-radius:12px; padding:14px 18px; box-shadow:0 4px 20px rgba(0,0,0,.15); display:none; align-items:center; gap:10px; min-width:260px; }
+.icall.show { display:flex; }
+.icall .act { display:flex; gap:8px; margin-left:auto; }
+#toast { position:fixed; top:60px; left:50%; transform:translateX(-50%); background:rgba(0,0,0,.75); color:#fff; padding:8px 18px; border-radius:16px; font-size:13px; z-index:300; opacity:0; transition:opacity .2s; pointer-events:none; }
+#toast.show { opacity:1; }
+/* Call float bubble */
+#callFloat {
+  position:fixed; bottom:80px; right:16px; z-index:210;
+  background:var(--tab-on); color:#fff; border-radius:24px;
+  padding:8px 16px; display:none; align-items:center; gap:8px;
+  cursor:pointer; box-shadow:0 4px 16px rgba(0,0,0,.2);
+  font-size:13px; white-space:nowrap;
+}
+#callFloat.show { display:flex; }
+#callFloat .dot { width:8px; height:8px; border-radius:50%; background:#fff; animation:blink 1s infinite; }
+@keyframes blink { 50%{opacity:.3} }
+.empty { text-align:center; padding:40px 16px; color:var(--text2); font-size:14px; }
+::-webkit-scrollbar { width:0; }
+/* Checkbox list */
+.cb-list { max-height:300px; overflow-y:auto; }
+.cb-item { display:flex; align-items:center; gap:10px; padding:10px 0; border-bottom:1px solid #f0f0f0; cursor:pointer; }
+.cb-item input { width:18px; height:18px; accent-color:var(--tab-on); }
+</style>
 </head>
 <body>
-<div class="app-container">
-    <!-- 左侧聊天区域 -->
-    <div class="chat-area">
-        <div class="chat-header">
-            <h2>📡 传讯 · 字卡回廊</h2>
-            <p>💬 你可以随意发送消息 · 对方只能使用「字卡」随机回复（1~3条）</p>
-        </div>
-        <div class="messages-container" id="messagesContainer">
-            <!-- 动态消息 -->
-            <div class="message opponent">
-                <div class="bubble">
-                    <div class="sender-name">📜 字卡使者</div>
-                    你好呀～ 请随意说话，我会用字卡回应你！<br>✏️ 右侧可以自由增删改字卡哦。
-                    <div class="message-time">刚刚</div>
-                </div>
-            </div>
-        </div>
-        <div class="input-area">
-            <div class="input-wrapper">
-                <input type="text" id="messageInput" placeholder="输入你想说的话..." autocomplete="off">
-                <button id="sendBtn">➤</button>
-            </div>
-            <div class="extra-buttons">
-                <button class="icon-btn" id="manualReplyBtn">🎲 对方随机回话</button>
-            </div>
-        </div>
+<div id="app">
+  <!-- Tab: 微信 -->
+  <div id="tab-chats" class="page on">
+    <div class="hd">微信<button class="hdr" id="btnNewChat">+</button></div>
+    <div id="chatList"></div>
+  </div>
+  <!-- Tab: 通讯录 -->
+  <div id="tab-contacts" class="page">
+    <div class="hd">通讯录<button class="hdr" id="btnNewCt">+</button></div>
+    <div id="ctList"></div>
+  </div>
+  <!-- Tab: 发现 -->
+  <div id="tab-discover" class="page">
+    <div class="hd">朋友圈<button class="hdr" id="btnPostMoment">📷</button></div>
+    <div id="momentsFeed"></div>
+  </div>
+  <!-- Tab: 我 -->
+  <div id="tab-me" class="page">
+    <div class="pf-card" id="pfCard">
+      <div class="pf-av" id="myAv"></div>
+      <div><div class="pf-name" id="myNm"></div><div class="pf-st" id="mySt"></div></div>
     </div>
+    <div class="mg">
+      <div class="menu-item" id="btnCards">📝 字卡库 <span class="arr">›</span></div>
+      <div class="menu-item" id="btnLetters">✉️ 信箱 <span class="arr">›</span></div>
+      <div class="menu-item" id="btnSettings">⚙️ 设置 <span class="arr">›</span></div>
+    </div>
+    <div class="mg">
+      <div class="menu-item" id="btnExport">📤 导出数据 <span class="arr">›</span></div>
+      <div class="menu-item" id="btnImport">📥 导入数据 <span class="arr">›</span></div>
+    </div>
+  </div>
 
-    <!-- 右侧字卡管理区（可自定义字卡） -->
-    <div class="cards-panel">
-        <div class="panel-title">📇 字卡仓库</div>
-        <div class="add-card-area">
-            <input type="text" id="newCardInput" placeholder="新字卡内容, 例如: 原来如此" maxlength="50">
-            <button id="addCardBtn">➕ 添加</button>
-        </div>
-        <div style="font-size:0.7rem; color:#b48a62; margin: 0 8px;">✨ 对面只会使用下方字卡回复 (随机1~3条)</div>
-        <div class="card-list" id="cardListContainer">
-            <!-- 动态渲染字卡列表 -->
-        </div>
-        <div class="replying-tip">⚡ 对方每次回复会从字卡中随机选1~3条，可重复选取</div>
+  <!-- Chat view -->
+  <div id="chat-view">
+    <div class="cv-hd">
+      <button class="back" id="btnCvBack">←</button>
+      <div class="titles">
+        <div class="tname" id="cvName"></div>
+        <div class="ttyping" id="cvTyping">正在输入<span class="dots"></span></div>
+      </div>
+      <button class="more" id="btnCvCall" style="margin-right:4px;">📞</button>
+      <button class="more" id="btnCvMenu">⋯</button>
     </div>
+    <div class="cv-menu" id="cvMenu">
+      <div onclick="showChatInfo()">聊天详情</div>
+      <div onclick="trigReply()">让对方回复</div>
+      <div onclick="clearChatHistory()">清空聊天记录</div>
+    </div>
+    <div class="msgs" id="msgs"></div>
+    <div class="input-bar">
+      <textarea id="msgInp" rows="1" placeholder=""></textarea>
+      <button class="snd" id="btnSnd">发送</button>
+    </div>
+  </div>
+
+  <!-- Tab bar -->
+  <nav id="tabbar">
+    <button data-tab="chats" class="tb on"><span class="ico">💬</span>微信</button>
+    <button data-tab="contacts" class="tb"><span class="ico">👥</span>通讯录</button>
+    <button data-tab="discover" class="tb"><span class="ico">🌿</span>发现</button>
+    <button data-tab="me" class="tb"><span class="ico">👤</span>我</button>
+  </nav>
 </div>
 
+<!-- Modal -->
+<div class="modal-bg" id="modalBg"><div class="modal" id="modal"></div></div>
+
+<!-- Call -->
+<div id="call-v">
+  <div class="call-av" id="callAv"></div><div class="call-nm" id="callNm"></div>
+  <div class="call-st" id="callSt">正在呼叫...</div><div class="call-tm" id="callTm"></div>
+  <div class="call-btns" id="callBtns">
+    <button class="call-c" style="background:#888;color:#fff;" id="btnMinCall" title="缩小为浮窗">−</button>
+    <button class="call-c call-end" id="btnHang">📞</button>
+  </div>
+</div>
+
+<!-- Incoming call -->
+<div class="icall" id="icall">
+  <div class="av" style="width:40px;height:40px;font-size:16px;" id="icallAv"></div>
+  <div><div style="font-weight:600;font-size:14px;" id="icallNm"></div><div style="font-size:11px;color:var(--text2);">语音来电</div></div>
+  <div class="act">
+    <button class="call-c call-end" style="width:36px;height:36px;font-size:16px;" id="btnDecl">📞</button>
+    <button class="call-c call-ans" style="width:36px;height:36px;font-size:16px;" id="btnAcpt">📞</button>
+  </div>
+</div>
+
+<div id="toast"></div>
+<div id="callFloat" onclick="restoreCall()"><span class="dot"></span><span id="callFloatTime">通话中 00:00</span></div>
+
 <script>
-    // ---------- 存储 KEY ----------
-    const STORAGE_KEY = 'talk_card_deck';
+// ===== DATA =====
+const K='wc2';
+let D={
+  me:{name:'我',avatar:'',status:''},
+  cards:{},
+  contacts:[],
+  msgs:{},
+  moments:[],
+  letters:[],
+  pending:{},
+  pendingActive:{},
+  bg:{},  // chat backgrounds per contact
+  settings:{replyDelay:[3,180],replyCount:[1,5],callAnswer:0.5,callActiveChance:0.01,statusInterval:5,statusProb:0.5,letterDays:[1,7],letterReplies:[5,30],momentsLike:0.6,momentsComment:0.3},
+  _lastStatus:0,_lastMoments:''
+};
+let curTab='chats',curChat=null,curGrp=null;
+let simTimer=null,callTimer=null;
 
-    // ---------- 默认字卡库 (符合情境) ----------
-    const DEFAULT_CARDS = [
-        "是的呢✨",
-        "原来如此！",
-        "哈哈，有趣～",
-        "我也这么觉得",
-        "不太明白诶",
-        "继续说吧👂",
-        "真的吗？",
-        "太棒了吧🎉",
-        "思考中...",
-        "有道理！"
-    ];
+function sv(){localStorage.setItem(K,JSON.stringify(D));}
+function ld(){try{let r=localStorage.getItem(K);if(r)D={...D,...JSON.parse(r)};}catch(e){}}
+function uid(){return Date.now().toString(36)+Math.random().toString(36).slice(2,7);}
+function rd(a,b){return Math.floor(Math.random()*(b-a+1))+a;}
+function rf(){return Math.random();}
+function pr(a){return a[Math.floor(Math.random()*a.length)];}
+function gc(id){return D.contacts.find(c=>c.id===id);}
+function gm(id){if(!D.msgs[id])D.msgs[id]=[];return D.msgs[id];}
 
-    // ---------- 全局变量 ----------
-    let cardDeck = [];          // 存储字卡字符串数组
-    let pendingReplyTimers = []; // 存储即将执行的定时器，用于页面卸载或取消（非必须但防冲突）
-    
-    // DOM 元素
-    const messagesContainer = document.getElementById('messagesContainer');
-    const messageInput = document.getElementById('messageInput');
-    const sendBtn = document.getElementById('sendBtn');
-    const manualReplyBtn = document.getElementById('manualReplyBtn');
-    const cardListContainer = document.getElementById('cardListContainer');
-    const newCardInput = document.getElementById('newCardInput');
-    const addCardBtn = document.getElementById('addCardBtn');
+function avHtml(av,sz,nm){
+  let s=sz||34,n=nm||'?';
+  if(av) return `<img src="${av}" style="width:${s}px;height:${s}px;border-radius:4px;object-fit:cover;" onerror="this.outerHTML='<span style=display:flex;width:${s}px;height:${s}px;border-radius:4px;background:#d9d9d9;align-items:center;justify-content:center;font-size:${s*0.4}px;color:#fff;font-weight:600;>${n[0]}</span>'">`;
+  return `<span style="display:flex;width:${s}px;height:${s}px;border-radius:4px;background:#d9d9d9;align-items:center;justify-content:center;font-size:${s*0.4}px;color:#fff;font-weight:600;">${n[0]}</span>`;
+}
 
-    // ---------- 辅助函数 ----------
-    // 获取当前时间字符串 HH:MM
-    function getTimeStr() {
-        const now = new Date();
-        return `${now.getHours().toString().padStart(2,'0')}:${now.getMinutes().toString().padStart(2,'0')}`;
-    }
+function allCards(groups){
+  let a=[];
+  for(let g of groups){if(D.cards[g])a=a.concat(D.cards[g]);}
+  if(!a.length){let dg=D.cards['日常']||[];if(dg.length)a=dg;else a=[{type:'text',val:'嗯嗯'}];}
+  return a;
+}
 
-    // 添加一条消息 (sender: 'user' 或 'opponent', text: 内容)
-    function addMessage(sender, text, isSystem = false) {
-        const messageDiv = document.createElement('div');
-        messageDiv.className = `message ${sender}`;
-        const bubble = document.createElement('div');
-        bubble.className = 'bubble';
-        
-        const nameSpan = document.createElement('div');
-        nameSpan.className = 'sender-name';
-        if (sender === 'user') {
-            nameSpan.innerHTML = '🧑 我 · 说';
-        } else {
-            nameSpan.innerHTML = '🎴 字卡使者 · 回';
-        }
-        
-        const contentSpan = document.createElement('div');
-        contentSpan.style.whiteSpace = 'pre-wrap';
-        contentSpan.innerText = text;
-        
-        const timeSpan = document.createElement('div');
-        timeSpan.className = 'message-time';
-        timeSpan.innerText = getTimeStr();
-        
-        bubble.appendChild(nameSpan);
-        bubble.appendChild(contentSpan);
-        bubble.appendChild(timeSpan);
-        messageDiv.appendChild(bubble);
-        messagesContainer.appendChild(messageDiv);
-        // 滚动到底部
-        messagesContainer.scrollTop = messagesContainer.scrollHeight;
-        return messageDiv;
-    }
+function genText(groups){
+  let cards=allCards(groups),count=rd(1,Math.min(3,cards.length)),parts=[];
+  for(let i=0;i<count;i++)parts.push(pr(cards).val);
+  return parts.join(' ');
+}
 
-    // 获取当前字卡库 (实时)
-    function getCurrentCardDeck() {
-        return [...cardDeck];
+function genMsgs(contact,count){
+  let msgs=[],groups=contact.isGroup?[]:(contact.cardGroups&&contact.cardGroups.length?contact.cardGroups:Object.keys(D.cards).filter(g=>g!=='状态'));
+  let n=Math.min(count,10);
+  for(let i=0;i<n;i++){
+    let from=contact.name,av=contact.avatar||'',cg=groups;
+    if(contact.isGroup&&contact.members&&contact.members.length){
+      let m=pr(contact.members);from=m.name;av=m.avatar||'';cg=m.cardGroups&&m.cardGroups.length?m.cardGroups:Object.keys(D.cards).filter(g=>g!=='状态');
     }
+    let cards=allCards(cg.length?cg:Object.keys(D.cards).filter(g=>g!=='状态'));
+    if(!cards.length)cards=[{type:'text',val:'嗯'}];
+    let card=pr(cards);
+    msgs.push({id:uid(),from,fromAvatar:av,text:card.val,time:Date.now(),type:card.type||'text',img:card.type==='img'?card.val:null});
+  }
+  return msgs;
+}
 
-    // 对方随机回复（多条核心逻辑）
-    // count: 指定回复条数, 若不传则随机1~3条
-    function opponentReplyWithCards(customCount = null) {
-        const currentCards = getCurrentCardDeck();
-        if (currentCards.length === 0) {
-            addMessage('opponent', '⚠️ 字卡仓库空空如也，请在右侧添加字卡，我才能回复你～');
-            return;
-        }
-        
-        let replyCount = customCount;
-        if (replyCount === null || replyCount === undefined) {
-            // 随机 1 到 3 条，但不超过字卡数量太多也可以重复，所以无限制
-            replyCount = Math.floor(Math.random() * 3) + 1; // 1,2,3
-        }
-        // 保证最少1条
-        replyCount = Math.max(1, replyCount);
-        
-        // 为了防止同时大量定时器混乱，我们不打断之前的定时器，只是依次追加新的定时器。
-        // 每条消息间隔 0.4s  ~ 0.6s 模拟正在回话
-        let delay = 0;
-        for (let i = 0; i < replyCount; i++) {
-            // 随机选取字卡 (允许重复)
-            const randomIndex = Math.floor(Math.random() * currentCards.length);
-            const cardText = currentCards[randomIndex];
-            const timer = setTimeout(() => {
-                addMessage('opponent', cardText);
-            }, delay);
-            pendingReplyTimers.push(timer);
-            delay += 380; // 间隔0.38秒，舒适节奏
-        }
-        // 可选添加一个结束后的清理标记（不用太复杂）
-        setTimeout(() => {
-            pendingReplyTimers = pendingReplyTimers.filter(t => t._destroyed ? false : true);
-        }, delay + 200);
-    }
+function contactStatus(c){
+  if(!c._status){let sc=D.cards['状态']||[];c._status=sc.length?pr(sc).val:'在线';}
+  return c._status;
+}
 
-    // 清理所有等待中的回复定时器（可选，但为了页面卸载时）
-    function clearAllPendingTimers() {
-        for (let timer of pendingReplyTimers) {
-            clearTimeout(timer);
-        }
-        pendingReplyTimers = [];
+// ===== SIMULATION =====
+function schedReply(cid,delaySec){
+  D.pending[cid]={time:Date.now()+delaySec*1000,cid};
+  sv();
+}
+function checkSim(){
+  let now=Date.now(),ch=false;
+  for(let[cid,p]of Object.entries(D.pending)){
+    if(now>=p.time){
+      let ct=gc(cid);if(ct){
+        let ms=genMsgs(ct,rd(D.settings.replyCount[0],D.settings.replyCount[1]));
+        gm(cid).push(...ms);
+      }
+      delete D.pending[cid];ch=true;
+      if(cid===curChat){renderMsgs();updateTyping();}
+      renderChats();
     }
+  }
+  for(let[cid,p]of Object.entries(D.pendingActive||{})){
+    if(now>=p.time){
+      let ct=gc(cid);if(ct){let ms=genMsgs(ct,rd(1,3));gm(cid).push(...ms);}
+      delete D.pendingActive[cid];ch=true;
+      if(cid===curChat){renderMsgs();updateTyping();}
+      renderChats();
+    }
+  }
+  let si=(D.settings.statusInterval||5)*3600000;
+  if(now-(D._lastStatus||now)>=si){
+    D._lastStatus=now;
+    if(rf()<(D.settings.statusProb||0.5)){
+      let sc=D.cards['状态']||[];
+      for(let ct of D.contacts){if(sc.length)ct._status=pr(sc).val;}
+      ch=true;
+    }
+  }
+  for(let l of D.letters){
+    if(!l.delivered&&now>=l.deliverAt){
+      l.delivered=true;let ct=gc(l.toId);
+      if(ct)l.replies=genMsgs(ct,rd(D.settings.letterReplies[0],D.settings.letterReplies[1]));
+      ch=true;toast('📬 来自「'+l.toName+'」的回信到了！');
+    }
+  }
+  if(rf()<(D.settings.callActiveChance||0.01)*(5/3600)){
+    let el=D.contacts.filter(c=>!c.isGroup);
+    if(el.length&&!D._activeCall)showIncoming(pr(el));
+  }
+  if(ch)sv();
+}
 
-    // 用户发送消息主逻辑
-    function sendUserMessage() {
-        let rawText = messageInput.value.trim();
-        if (rawText === "") return;
-        // 添加用户消息
-        addMessage('user', rawText);
-        messageInput.value = "";
-        messageInput.focus();
-        // 用户发送后，对方自动随机使用字卡回复（随机1~3条）
-        opponentReplyWithCards(); // 自动调用，随机条数
-    }
+// ===== RENDER =====
+function renderChats(){
+  let el=document.getElementById('chatList'),cs=D.contacts;
+  if(!cs.length){el.innerHTML='<div class=empty>暂无对话，点击 + 创建</div>';return;}
+  let sorted=[...cs].sort((a,b)=>{
+    let ma=gm(a.id),mb=gm(b.id);
+    return (mb.length?mb[mb.length-1].time:0)-(ma.length?ma[ma.length-1].time:0);
+  });
+  let h='';
+  for(let ct of sorted){
+    let ms=gm(ct.id),lm=ms.length?ms[ms.length-1]:null;
+    let pv=lm?(lm.type==='img'?'[图片]':lm.text):'';
+    let unread=ms.filter(m=>m.from!==D.me.name&&!m._read).length;
+    h+=`<div class="chat-item" onclick="openChat('${ct.id}')">
+      <div class="av">${avHtml(ct.avatar,44,ct.name)}</div>
+      <div class="ci"><div class="cn">${ct.name}${ct.isGroup?'<span style=color:var(--tab-on);font-size:11px;>群</span>':''}</div>
+      <div class="cp">${pv||''}</div></div>
+      <div class="cm"><div class="ct">${lm?fmtTime(lm.time):''}</div>
+      ${unread?'<span class=badge>'+unread+'</span>':''}</div></div>`;
+  }
+  el.innerHTML=h;
+}
 
-    // 手动触发对方随机回话（可以回复多条，纯随机）
-    function manualOpponentReply() {
-        const currentCards = getCurrentCardDeck();
-        if (currentCards.length === 0) {
-            addMessage('opponent', '📭 还没有字卡呢，请先在右侧添加一些字卡吧！');
-            return;
-        }
-        opponentReplyWithCards(); // 随机1~3条
-    }
+function renderCts(){
+  let el=document.getElementById('ctList'),sorted=[...D.contacts].sort((a,b)=>a.name.localeCompare(b.name,'zh'));
+  let h='',cur='';
+  for(let ct of sorted){
+    let l=ct.name[0].toUpperCase();
+    if(l!==cur){cur=l;h+=`<div class=cl>${cur}</div>`;}
+    h+=`<div class="ct-item" onclick="openChat('${ct.id}')">
+      <div class="av">${avHtml(ct.avatar,40,ct.name)}</div>
+      <div style="flex:1;"><div style="font-size:15px;">${ct.name}</div>
+      <div style="font-size:11px;color:var(--text2);">${ct.isGroup?(ct.members||[]).map(m=>m.name).join('、'):contactStatus(ct)}</div></div></div>`;
+  }
+  if(!sorted.length)h='<div class=empty>暂无联系人，点击 + 添加</div>';
+  el.innerHTML=h;
+}
 
-    // ---------- 字卡管理 (增删改查 + 持久化) ----------
-    function saveCardDeck() {
-        localStorage.setItem(STORAGE_KEY, JSON.stringify(cardDeck));
-    }
+function renderMoments(){
+  let el=document.getElementById('momentsFeed');
+  if(!D.moments.length){el.innerHTML='<div class=empty>暂无动态<br><span style="font-size:12px;">点击右上角📷发一条吧</span></div>';return;}
+  let h='';
+  for(let i=0;i<D.moments.length;i++){
+    let p=D.moments[i],lks=p._likes||[],cms=p._comments||[];
+    let isMe=p.author===D.me.name;
+    h+=`<div class="m-item">
+      <div class="m-hd"><div class="m-av">${avHtml(isMe?D.me.avatar:'',40,p.author)}</div>
+      <div><div class="m-name">${p.author}</div><div class="m-time">${p.time||''}</div></div></div>
+      <div class="m-content">${p.content}</div>
+      ${p.image?`<img src="${p.image}" class="m-img">`:''}
+      <div class="m-acts">
+        <span onclick="likeMoment('${p._id}')">❤️ ${lks.length||'赞'}</span>
+        <span onclick="commentMoment('${p._id}')">💬 ${cms.length||'评论'}</span>
+      </div>
+      ${cms.length?`<div class="m-cmts">${cms.map(c=>`<div><span class=n>${c.name}</span>: ${c.text}</div>`).join('')}</div>`:''}
+    </div>`;
+  }
+  el.innerHTML=h;
+}
 
-    function loadCardDeck() {
-        const stored = localStorage.getItem(STORAGE_KEY);
-        if (stored) {
-            try {
-                const arr = JSON.parse(stored);
-                if (Array.isArray(arr) && arr.length > 0) {
-                    cardDeck = arr;
-                    return;
-                }
-            } catch(e) { console.warn(e); }
-        }
-        // 默认数据深拷贝
-        cardDeck = [...DEFAULT_CARDS];
-        saveCardDeck();
-    }
+function findMoment(id){return D.moments.find(p=>p._id===id);}
 
-    // 渲染右侧字卡列表
-    function renderCardList() {
-        if (!cardListContainer) return;
-        if (cardDeck.length === 0) {
-            cardListContainer.innerHTML = `<div class="empty-tip">✨ 暂无字卡，请点击上方添加<br>对面将无法回复～</div>`;
-            return;
-        }
-        const html = cardDeck.map((card, idx) => {
-            // 转义防止XSS
-            const safeCard = escapeHtml(card);
-            return `
-                <div class="card-item" data-index="${idx}">
-                    <span class="card-text">📄 ${safeCard}</span>
-                    <div class="card-actions">
-                        <button class="edit-card" data-index="${idx}" title="编辑字卡">✏️</button>
-                        <button class="delete-card" data-index="${idx}" title="删除字卡">🗑️</button>
-                    </div>
-                </div>
-            `;
-        }).join('');
-        cardListContainer.innerHTML = html;
-        
-        // 绑定编辑/删除事件
-        document.querySelectorAll('.edit-card').forEach(btn => {
-            btn.addEventListener('click', (e) => {
-                e.stopPropagation();
-                const idx = parseInt(btn.getAttribute('data-index'), 10);
-                editCardAtIndex(idx);
-            });
-        });
-        document.querySelectorAll('.delete-card').forEach(btn => {
-            btn.addEventListener('click', (e) => {
-                e.stopPropagation();
-                const idx = parseInt(btn.getAttribute('data-index'), 10);
-                deleteCardAtIndex(idx);
-            });
-        });
+function likeMoment(id){
+  let p=findMoment(id);if(!p)return;
+  if(!p._likes)p._likes=[];
+  let me=D.me.name;
+  if(p._likes.includes(me)){p._likes=p._likes.filter(n=>n!==me);toast('已取消');}
+  else{p._likes.push(me);toast('已点赞');}
+  sv();renderMoments();
+}
+
+function commentMoment(id){
+  let p=findMoment(id);if(!p)return;
+  let txt=prompt('写评论：','');if(!txt||!txt.trim())return;
+  if(!p._comments)p._comments=[];
+  p._comments.push({name:D.me.name,text:txt.trim()});
+  sv();renderMoments();toast('已评论');
+}
+
+function postMoment(){
+  let h=`<div class="fg"><span class="fl">说点什么...</span><textarea class="fi" id="pmCt" rows="4" placeholder="分享你的想法..."></textarea></div>
+    <div class="fg"><span class="fl">图片（可选）</span><div id="pmImgPrv"></div><button class="btn btn-o btn-s" id="btnPickPmImg">📷 选择图片</button></div>`;
+  modal(h,`<button class="btn btn-o" onclick="closeModal()">取消</button><button class="btn btn-p" onclick="svMoment()">发布</button>`);
+  document.getElementById('btnPickPmImg').onclick=async()=>{
+    let u=await pickImg(600,600,0.8);
+    if(u)document.getElementById('pmImgPrv').innerHTML=`<img src="${u}" style="max-width:100%;max-height:200px;border-radius:4px;margin-top:6px;">`;
+    document.getElementById('pmImgPrv').dataset.img=u||'';
+  };
+}
+
+function svMoment(){
+  let ct=document.getElementById('pmCt').value.trim();
+  if(!ct){toast('请写点内容');return;}
+  let img=document.getElementById('pmImgPrv')?.dataset?.img||'';
+  D.moments.unshift({_id:uid(),author:D.me.name,content:ct,time:'刚刚',image:img,_likes:[],_comments:[],_createdAt:Date.now()});
+  sv();closeModal();renderMoments();toast('已发布');
+}
+
+function renderMe(){
+  document.getElementById('myNm').textContent=D.me.name;
+  document.getElementById('mySt').textContent=D.me.status||'未设置状态';
+  let av=D.me.avatar,ae=document.getElementById('myAv');
+  if(av)ae.innerHTML=`<img src="${av}" style="width:100%;height:100%;border-radius:8px;object-fit:cover;" onerror="this.outerHTML='<span class=pf-av>${D.me.name[0]}</span>'">`;
+  else ae.innerHTML=`<span class="pf-av" style="display:flex;align-items:center;justify-content:center;font-size:26px;color:#fff;">${D.me.name[0]}</span>`;
+}
+
+function renderMsgs(){
+  let el=document.getElementById('msgs'),ms=gm(curChat);
+  let ct=gc(curChat),isGrp=ct&&ct.isGroup,bg=D.bg[curChat]||'';
+  el.style.background=bg||'';
+  let h='';
+  for(let m of ms){
+    let isMe=m.from===D.me.name;
+    h+=`<div class="msg-row ${isMe?'me':'you'}">`;
+    if(!isMe)h+=`<div class="msg-av">${avHtml(m.fromAvatar,34,m.from)}</div>`;
+    h+=`<div>`;
+    if(isGrp&&!isMe)h+=`<div class="msg-nm">${m.from}</div>`;
+    if(m.type==='img'&&m.img)h+=`<div class="msg-bbl"><img src="${m.img}" class="msg-img"></div>`;
+    else h+=`<div class="msg-bbl">${m.text}</div>`;
+    h+=`</div></div>`;
+  }
+  el.innerHTML=h;
+  el.scrollTop=el.scrollHeight;
+}
+
+function updateTyping(){
+  let n=document.getElementById('cvName'),t=document.getElementById('cvTyping');
+  if(D.pending[curChat]){
+    n.style.display='none';t.style.display='block';
+  }else{
+    n.style.display='block';t.style.display='none';
+  }
+}
+
+function fmtTime(ts){
+  let d=new Date(ts),n=new Date();
+  let h=String(d.getHours()).padStart(2,'0'),m=String(d.getMinutes()).padStart(2,'0');
+  if(d.toDateString()===n.toDateString())return h+':'+m;
+  let diff=Math.floor((n-d)/86400000);
+  if(diff===1)return '昨天';
+  if(diff<7)return diff+'天前';
+  return (d.getMonth()+1)+'/'+d.getDate();
+}
+
+// ===== CHAT =====
+function openChat(cid){
+  curChat=cid;let ct=gc(cid);if(!ct)return;
+  document.getElementById('cvName').textContent=ct.name;
+  let ms=gm(cid);ms.forEach(m=>m._read=true);
+  document.getElementById('chat-view').classList.add('open');
+  renderMsgs();updateTyping();closeCvMenu();
+  document.getElementById('msgInp').focus();
+}
+function closeChat(){
+  document.getElementById('chat-view').classList.remove('open');
+  curChat=null;closeCvMenu();renderChats();sv();
+}
+function sendMsg(){
+  if(!curChat)return;
+  let inp=document.getElementById('msgInp'),txt=inp.value.trim();
+  if(!txt)return;
+  gm(curChat).push({id:uid(),from:D.me.name,text:txt,time:Date.now(),type:'text'});
+  inp.value='';renderMsgs();renderChats();sv();
+  let ct=gc(curChat);
+  if(ct){
+    let d=rd(D.settings.replyDelay[0],D.settings.replyDelay[1]);
+    schedReply(curChat,d);updateTyping();
+  }
+}
+function trigReply(){
+  if(!curChat)return;let ct=gc(curChat);if(!ct)return;
+  closeCvMenu();
+  let d=rd(D.settings.replyDelay[0],D.settings.replyDelay[1]);
+  schedReply(curChat,d);updateTyping();
+  toast('「'+ct.name+'」正在输入...');
+}
+function trigActiveNow(){
+  closeCvMenu();
+  if(!curChat)return;let ct=gc(curChat);if(!ct)return;
+  let ms=genMsgs(ct,rd(1,3));gm(curChat).push(...ms);
+  renderMsgs();renderChats();sv();
+}
+function clearChatHistory(){
+  closeCvMenu();
+  if(!curChat)return;
+  if(!confirm('确定清空与「'+gc(curChat)?.name+'」的聊天记录吗？'))return;
+  D.msgs[curChat]=[];sv();renderMsgs();renderChats();toast('已清空');
+}
+
+// ===== CHAT INFO PAGE (WeChat-style) =====
+function showChatInfo(){
+  closeCvMenu();
+  let ct=gc(curChat);if(!ct)return;
+  let isGrp=ct.isGroup;
+  let h=`<div style="text-align:center;padding:20px 0;">
+    <div id="ciAv" style="width:72px;height:72px;border-radius:8px;overflow:hidden;display:inline-block;cursor:pointer;">${avHtml(ct.avatar,72,ct.name)}</div>
+    <div style="margin-top:12px;display:flex;align-items:center;justify-content:center;gap:4px;">
+      <span id="ciNm" style="font-size:18px;font-weight:600;">${ct.name}</span>
+      <span style="font-size:16px;cursor:pointer;color:var(--text2);" onclick="editCtName()">✎</span>
+    </div>
+    ${isGrp?`<div style="font-size:13px;color:var(--text2);margin-top:4px;">${(ct.members||[]).length} 名成员</div>`:''}
+  </div>
+  <div style="background:var(--card);border-radius:8px;overflow:hidden;margin-bottom:12px;">`;
+  // Group members
+  if(isGrp&&ct.members){
+    for(let m of ct.members){
+      h+=`<div style="display:flex;align-items:center;gap:10px;padding:10px 16px;border-bottom:1px solid #f0f0f0;"><div class="av">${avHtml(m.avatar,36,m.name)}</div><span style="font-size:15px;">${m.name}</span></div>`;
     }
-    
-    // 简单防XSS
-    function escapeHtml(str) {
-        return str.replace(/[&<>]/g, function(m) {
-            if (m === '&') return '&amp;';
-            if (m === '<') return '&lt;';
-            if (m === '>') return '&gt;';
-            return m;
-        }).replace(/[\uD800-\uDBFF][\uDC00-\uDFFF]/g, function(c) {
-            return c;
-        });
+  }
+  h+=`<div class="menu-item" onclick="pickChatBg()"><span>🎨 设置聊天背景</span><span class="arr">›</span></div>
+    <div class="menu-item" onclick="trigReply();closeModal();"><span>💬 让对方马上回复</span><span class="arr">›</span></div>
+    <div class="menu-item" onclick="setTimerMsg()"><span>⏰ 定时主动联系</span><span class="arr">›</span></div>
+  </div>
+  <div style="background:var(--card);border-radius:8px;overflow:hidden;margin-bottom:12px;">
+    <div class="menu-item" onclick="delCtFromInfo('${curChat}')"><span style="color:var(--danger);">${isGrp?'删除并退出群聊':'删除联系人'}</span></div>
+  </div>`;
+  modal(h,`<button class="btn btn-o" onclick="closeModal()" style="width:100%;">返回</button>`);
+
+  // Avatar picker
+  document.getElementById('ciAv').onclick=async()=>{
+    let u=await pickImg(200,200,0.7);
+    if(u){ct.avatar=u;sv();renderAll();closeModal();showChatInfo();}
+  };
+}
+
+function editCtName(){
+  let ct=gc(curChat);if(!ct)return;
+  let n=prompt('修改名称：',ct.name);
+  if(!n||!n.trim())return;
+  ct.name=n.trim();sv();renderAll();closeModal();showChatInfo();
+}
+
+function setTimerMsg(){
+  if(!curChat)return;
+  let def=D.settings.activeDelay||5;
+  let h=`<div class="fg"><span class="fl">让对方在几分钟后主动发起聊天？（默认值在「我→设置」中修改）</span><input class="fi" id="tmMin" type="number" value="${def}" min="1" max="120"></div>`;
+  modal(h,`<button class="btn btn-o" onclick="showChatInfo()">返回</button><button class="btn btn-p" onclick="svTimerMsg()">确定</button>`);
+}
+function svTimerMsg(){
+  let v=parseInt(document.getElementById('tmMin')?.value)||5;
+  v=Math.min(v,120);
+  if(!D.pendingActive)D.pendingActive={};
+  D.pendingActive[curChat]={time:Date.now()+v*60000,cid:curChat};
+  sv();closeModal();
+  toast('「'+gc(curChat)?.name+'」将在'+v+'分钟后主动联系你');
+}
+
+function pickChatBg(){
+  let curBg=D.bg[curChat]||'';
+  let colors=[
+    {v:'',l:'默认',s:'#fff'},
+    {v:'#f0e8d8',l:'暖米',s:'#f0e8d8'},
+    {v:'#dce8dc',l:'浅绿',s:'#dce8dc'},
+    {v:'#e2dce8',l:'浅紫',s:'#e2dce8'},
+    {v:'#dce4e8',l:'浅蓝',s:'#dce4e8'},
+    {v:'#f0dcd0',l:'暖橙',s:'#f0dcd0'},
+    {v:'#e8e4dc',l:'暖灰',s:'#e8e4dc'},
+    {v:'#d8d8d8',l:'深灰',s:'#d8d8d8'},
+    {v:'#2c2c2c',l:'暗黑',s:'#2c2c2c'}
+  ];
+  let h=`<div class="fl">选择聊天背景</div><div style="display:flex;flex-wrap:wrap;gap:10px;justify-content:center;margin-top:8px;">`;
+  for(let c of colors){
+    h+=`<div onclick="setChatBg('${c.v}')" style="width:70px;height:70px;border-radius:10px;cursor:pointer;border:3px solid ${curBg===c.v?'var(--tab-on)':'var(--border)'};background:${c.v||'#fff'};display:flex;align-items:center;justify-content:center;font-size:11px;color:${c.v==='#2c2c2c'?'#fff':'var(--text2)'};">${c.l}</div>`;
+  }
+  h+=`</div><div style="margin-top:14px;display:flex;gap:8px;"><button class="btn btn-o btn-s" id="btnBgFile">📷 从相册选取</button><span style="font-size:12px;color:var(--text2);align-self:center;">或</span><div class="fr"><input class="fi" id="bgUrl" placeholder="输入图片URL"><button class="btn btn-p btn-s" onclick="applyBgUrl()">应用</button></div></div>`;
+  modal(h,`<button class="btn btn-o" onclick="showChatInfo()">返回</button>`);
+  document.getElementById('btnBgFile').onclick=async()=>{
+    let u=await pickImg(800,600,0.8);
+    if(u){D.bg[curChat]='url('+u+') center/cover';sv();closeModal();renderMsgs();showChatInfo();}
+  };
+}
+function setChatBg(c){
+  D.bg[curChat]=c;sv();closeModal();renderMsgs();showChatInfo();
+}
+function applyBgUrl(){
+  let u=document.getElementById('bgUrl')?.value.trim();
+  if(u){D.bg[curChat]='url('+u+') center/cover';sv();closeModal();renderMsgs();showChatInfo();}
+}
+function delCtFromInfo(cid){
+  if(!confirm('确定删除「'+gc(cid)?.name+'」吗？聊天记录将一并清除。'))return;
+  D.contacts=D.contacts.filter(c=>c.id!==cid);
+  delete D.msgs[cid];delete D.pending[cid];delete D.pendingActive[cid];delete D.bg[cid];
+  sv();closeModal();if(curChat===cid)closeChat();renderAll();toast('已删除');
+}
+
+// ===== CHAT MENU =====
+function toggleCvMenu(){
+  let m=document.getElementById('cvMenu');
+  m.classList.toggle('show');
+}
+function closeCvMenu(){document.getElementById('cvMenu').classList.remove('show');}
+
+// ===== CALL =====
+function startCall(cid){
+  let ct=gc(cid);if(!ct||ct.isGroup||D._activeCall)return;
+  D._activeCall={cid:ct.id,cname:ct.name,start:Date.now(),dir:'out',answered:false};
+  document.getElementById('callAv').innerHTML=avHtml(ct.avatar,72,ct.name);
+  document.getElementById('callNm').textContent=ct.name;
+  document.getElementById('callSt').textContent='正在呼叫...';
+  document.getElementById('callTm').textContent='';
+  document.getElementById('callBtns').innerHTML='<button class="call-c" style="background:#888;color:#fff;" id="btnMinCall">−</button><button class="call-c call-end" id="btnHang">📞</button>';
+  document.getElementById('call-v').classList.add('open');
+  document.getElementById('btnHang').onclick=endCall;
+  let ad=rd(2,5);
+  setTimeout(()=>{
+    if(!D._activeCall||D._activeCall.cid!==cid)return;
+    if(rf()<(D.settings.callAnswer||0.5)){
+      D._activeCall.answered=true;D._activeCall.ansTime=Date.now();
+      document.getElementById('callSt').textContent='通话中...';
+      document.getElementById('callBtns').innerHTML='<button class="call-c" style="background:#888;color:#fff;" id="btnMinCall">−</button><button class="call-c call-end" id="btnHang">📞</button>';
+      document.getElementById('btnHang').onclick=endCall;
+      startCallTimer();
+    }else{
+      document.getElementById('callSt').textContent='对方未接听';
+      setTimeout(endCall,2000);
     }
-    
-    // 编辑字卡
-    function editCardAtIndex(index) {
-        if (index < 0 || index >= cardDeck.length) return;
-        const oldText = cardDeck[index];
-        const newText = prompt(`编辑字卡内容:`, oldText);
-        if (newText !== null && newText.trim() !== "") {
-            const trimmed = newText.trim();
-            if (trimmed.length > 0 && trimmed.length <= 80) {
-                cardDeck[index] = trimmed;
-                saveCardDeck();
-                renderCardList();
-                // 可增加轻提示 (不干扰聊天)
-                addSystemTip(`📝 字卡已更新: “${trimmed}”`);
-            } else {
-                alert("字卡内容需为1~80个字符");
-            }
-        }
+  },ad*1000);
+}
+function showIncoming(ct){
+  if(D._activeCall)return;
+  document.getElementById('icallAv').innerHTML=avHtml(ct.avatar,40,ct.name);
+  document.getElementById('icallNm').textContent=ct.name;
+  document.getElementById('icall').classList.add('show');
+  D._activeCall={cid:ct.id,cname:ct.name,start:Date.now(),dir:'in',answered:false,ringing:true};
+  document.getElementById('btnAcpt').onclick=()=>{
+    document.getElementById('icall').classList.remove('show');
+    D._activeCall.answered=true;D._activeCall.ansTime=Date.now();D._activeCall.ringing=false;
+    document.getElementById('callAv').innerHTML=avHtml(ct.avatar,72,ct.name);
+    document.getElementById('callNm').textContent=ct.name;
+    document.getElementById('callSt').textContent='通话中...';
+    document.getElementById('callTm').textContent='';
+    document.getElementById('callBtns').innerHTML='<button class="call-c" style="background:#888;color:#fff;" id="btnMinCall">−</button><button class="call-c call-end" id="btnHang">📞</button>';
+    document.getElementById('btnHang').onclick=endCall;
+    document.getElementById('call-v').classList.add('open');
+    startCallTimer();
+  };
+  document.getElementById('btnDecl').onclick=()=>{document.getElementById('icall').classList.remove('show');D._activeCall=null;};
+  setTimeout(()=>{if(D._activeCall&&D._activeCall.ringing){document.getElementById('icall').classList.remove('show');D._activeCall=null;}},30000);
+}
+function startCallTimer(){
+  if(callTimer)clearInterval(callTimer);
+  callTimer=setInterval(()=>{
+    if(!D._activeCall||!D._activeCall.answered)return;
+    let e=Math.floor((Date.now()-D._activeCall.ansTime)/1000),m=Math.floor(e/60),s=e%60;
+    let ts=String(m).padStart(2,'0')+':'+String(s).padStart(2,'0');
+    document.getElementById('callTm').textContent=ts;
+    document.getElementById('callFloatTime').textContent='通话中 '+ts;
+  },1000);
+}
+function minimizeCall(){
+  document.getElementById('call-v').classList.remove('open');
+  document.getElementById('callFloat').classList.add('show');
+  D._callMinimized=true;
+}
+function restoreCall(){
+  document.getElementById('callFloat').classList.remove('show');
+  document.getElementById('call-v').classList.add('open');
+  D._callMinimized=false;
+}
+function endCall(){
+  if(callTimer){clearInterval(callTimer);callTimer=null;}
+  document.getElementById('call-v').classList.remove('open');
+  document.getElementById('callFloat').classList.remove('show');
+  document.getElementById('icall').classList.remove('show');
+  D._activeCall=null;D._callMinimized=false;
+}
+
+// ===== MODAL =====
+function modal(html,ft){
+  document.getElementById('modal').innerHTML=`<div class="modal-hd"><h3></h3><button class="modal-close" onclick="closeModal()">✕</button></div><div class="modal-body">${html}</div>${ft?`<div class="modal-ft">${ft}</div>`:''}`;
+  document.getElementById('modalBg').classList.add('open');
+}
+function closeModal(){document.getElementById('modalBg').classList.remove('open');}
+document.getElementById('modalBg').addEventListener('click',function(e){if(e.target===this)closeModal();});
+
+// ===== IMAGE UPLOAD =====
+function compressImg(file,mw,mh,q){
+  return new Promise(res=>{
+    let r=new FileReader();
+    r.onload=e=>{
+      let img=new Image();
+      img.onload=()=>{
+        let c=document.createElement('canvas'),w=img.width,h=img.height;
+        if(w>mw){h*=mw/w;w=mw;}if(h>mh){w*=mh/h;h=mh;}
+        c.width=w;c.height=h;c.getContext('2d').drawImage(img,0,0,w,h);
+        res(c.toDataURL('image/jpeg',q));
+      };
+      img.src=e.target.result;
+    };
+    r.readAsDataURL(file);
+  });
+}
+function pickImg(mw,mh,q){
+  return new Promise(res=>{
+    let inp=document.createElement('input');inp.type='file';inp.accept='image/*';
+    inp.onchange=async e=>{
+      let f=e.target.files[0];if(!f){res(null);return;}
+      res(await compressImg(f,mw||200,mh||200,q||0.7));
+    };
+    inp.click();
+  });
+}
+
+// ===== PROFILE =====
+async function editProfile(){
+  let p=D.me;
+  let h=`<div class="fg"><span class="fl">头像</span><div style="display:flex;align-items:center;gap:10px;"><div class="pf-av" id="pfAvPrv" style="width:56px;height:56px;font-size:22px;">${p.avatar?`<img src="${p.avatar}" style="width:100%;height:100%;border-radius:8px;object-fit:cover;">`:'<span>'+p.name[0]+'</span>'}</div><button class="btn btn-o btn-s" id="btnPickAv">从相册选择</button></div></div>
+    <div class="fg"><span class="fl">昵称</span><input class="fi" id="efNm" value="${p.name}"></div>
+    <div class="fg"><span class="fl">状态</span><input class="fi" id="efSt" value="${p.status||''}" placeholder="设置状态..."></div>`;
+  modal(h,`<button class="btn btn-o" onclick="closeModal()">取消</button><button class="btn btn-p" onclick="svProfile()">保存</button>`);
+  document.getElementById('btnPickAv').onclick=async()=>{
+    let u=await pickImg(200,200,0.7);
+    if(u){document.getElementById('pfAvPrv').innerHTML=`<img src="${u}" style="width:100%;height:100%;border-radius:8px;object-fit:cover;">`;document.getElementById('pfAvPrv').dataset.na=u;}
+  };
+}
+function svProfile(){
+  let nv=document.getElementById('pfAvPrv')?.dataset?.na;if(nv)D.me.avatar=nv;
+  D.me.name=document.getElementById('efNm').value.trim()||D.me.name;
+  D.me.status=document.getElementById('efSt').value.trim();
+  sv();renderMe();closeModal();toast('已保存');
+}
+
+// ===== CONTACTS =====
+function openNewCt(){
+  let h=`<div class="fg"><span class="fl">类型</span><select class="fi" id="ecTp" onchange="tgGrp()"><option value="person">个人</option><option value="group">群聊</option></select></div>
+    <div class="fg"><span class="fl">名称</span><input class="fi" id="ecNm" placeholder="名称"></div>
+    <div id="ecMbs" style="display:none;"><div class="fl">选择群成员</div><div class="cb-list" id="ecMbList"></div></div>`;
+  modal(h,`<button class="btn btn-o" onclick="closeModal()">取消</button><button class="btn btn-p" onclick="svNewCt()">创建</button>`);
+}
+function tgGrp(){
+  let t=document.getElementById('ecTp').value;
+  document.getElementById('ecMbs').style.display=t==='group'?'block':'none';
+  if(t==='group')renderMbCbs();
+}
+function renderMbCbs(){
+  let el=document.getElementById('ecMbList'),cs=D.contacts.filter(c=>!c.isGroup);
+  el.innerHTML=cs.map(c=>`<div class="cb-item"><input type="checkbox" value="${c.id}" class="mbCb"> <div class="av">${avHtml(c.avatar,32,c.name)}</div> ${c.name}</div>`).join('')||'<div class=empty>暂无可用联系人</div>';
+}
+function svNewCt(){
+  let nm=document.getElementById('ecNm').value.trim();if(!nm){toast('请输入名称');return;}
+  let isGrp=document.getElementById('ecTp').value==='group';
+  let ct={id:uid(),name:nm,avatar:'',isGroup:isGrp,cardGroups:[],members:[]};
+  if(isGrp){
+    let cbs=document.querySelectorAll('.mbCb:checked');
+    if(!cbs.length){toast('请至少选择一个成员');return;}
+    let selIds=Array.from(cbs).map(c=>c.value);
+    ct.members=D.contacts.filter(c=>selIds.includes(c.id)&&!c.isGroup).map(c=>({name:c.name,avatar:c.avatar||'',cardGroups:c.cardGroups||[]}));
+    if(!ct.members.length){toast('请选择有效成员');return;}
+  }else{
+    ct.cardGroups=Object.keys(D.cards).filter(g=>g!=='状态');
+  }
+  D.contacts.push(ct);sv();closeModal();renderAll();toast('已创建「'+nm+'」');
+}
+
+function editCt(cid){
+  let ct=gc(cid);if(!ct)return;
+  let h=`<div class="fg"><span class="fl">名称</span><input class="fi" id="ecNm" value="${ct.name}"></div>
+    <div class="fg"><span class="fl">头像</span><div style="display:flex;align-items:center;gap:10px;"><div class="av" id="ctAvPrv" style="width:44px;height:44px;font-size:18px;">${avHtml(ct.avatar,44,ct.name)}</div><button class="btn btn-o btn-s" id="btnPickCtAv">更换头像</button></div></div>
+    ${ct.isGroup?`<div class="fg"><span class="fl">群成员</span>${ct.members?ct.members.map(m=>`<div style="font-size:13px;padding:4px 0;">${m.name} <span style="color:var(--text2);font-size:11px;">${(m.cardGroups||[]).join(',')||'默认分组'}</span></div>`).join(''):''}</div>`:''}`;
+  modal(h,`<button class="btn btn-d btn-s" onclick="delCt('${cid}')">删除</button><button class="btn btn-o" onclick="closeModal()">取消</button><button class="btn btn-p" onclick="svEditCt('${cid}')">保存</button>`);
+  document.getElementById('btnPickCtAv').onclick=async()=>{
+    let u=await pickImg(200,200,0.7);
+    if(u){document.getElementById('ctAvPrv').innerHTML=`<img src="${u}" style="width:44px;height:44px;border-radius:4px;object-fit:cover;">`;document.getElementById('ctAvPrv').dataset.na=u;}
+  };
+}
+function svEditCt(cid){
+  let ct=gc(cid);if(!ct)return;
+  let nv=document.getElementById('ctAvPrv')?.dataset?.na;if(nv)ct.avatar=nv;
+  ct.name=document.getElementById('ecNm').value.trim()||ct.name;
+  sv();closeModal();renderAll();toast('已更新');
+}
+function delCt(cid){
+  if(!confirm('确定删除？'))return;
+  D.contacts=D.contacts.filter(c=>c.id!==cid);
+  delete D.msgs[cid];delete D.pending[cid];delete D.pendingActive[cid];delete D.bg[cid];
+  sv();closeModal();if(curChat===cid)closeChat();renderAll();
+}
+
+// ===== CARD LIBRARY =====
+function openCards(){
+  let gs=Object.keys(D.cards);
+  if(!gs.length){D.cards['日常']=[];D.cards['状态']=[];gs=['日常','状态'];sv();}
+  // Ensure '日常' exists
+  if(!D.cards['日常']){D.cards['日常']=[];sv();}
+  curGrp=gs[0];
+  // Build group list with hierarchy: 聊天内容 section + 状态 section
+  let chatGs=gs.filter(g=>g!=='状态'), statusG=gs.includes('状态');
+  let gHtml='<div style="font-size:10px;color:var(--text2);padding:8px 12px 4px;font-weight:600;">聊天内容</div>';
+  for(let g of chatGs){
+    gHtml+=`<div class="gi${g===curGrp?' on':''}" data-g="${g}" onclick="selGrp('${g.replace(/'/g,"\\'")}')">${g}</div>`;
+  }
+  if(statusG){
+    gHtml+='<div style="font-size:10px;color:var(--text2);padding:8px 12px 4px;font-weight:600;">状态</div>';
+    gHtml+=`<div class="gi${'状态'===curGrp?' on':''}" data-g="状态" onclick="selGrp('状态')">状态</div>`;
+  }
+  gHtml+=`<div style="padding:6px;"><button class="btn btn-o btn-s" onclick="addGrp()" style="width:100%;">+ 新建分组</button></div>`;
+  let h=`<div class="ce"><div class="ce-l" id="ceGrps">${gHtml}</div><div class="ce-r" id="ceItems"></div></div>`;
+  modal(h,`<button class="btn btn-o" onclick="closeModal();sv();renderAll();">完成</button>`);
+  renderCards();
+}
+function selGrp(g){curGrp=g;document.querySelectorAll('#ceGrps .gi').forEach(el=>el.classList.toggle('on',el.dataset.g===g));renderCards();}
+function renderCards(){
+  let el=document.getElementById('ceItems');if(!el)return;
+  let cards=D.cards[curGrp]||[];
+  let h=`<div style="margin-bottom:8px;">
+    <div class="fl">批量添加（每行一条，自动去重）</div>
+    <textarea id="newCardTxt" class="fi" rows="4" placeholder="每行一条&#10;支持文字、emoji&#10;粘贴多行批量导入" style="font-size:13px;resize:vertical;"></textarea>
+    <div style="margin-top:4px;display:flex;gap:4px;">
+      <button class="btn btn-p btn-s" onclick="addTextCard()">添加文字</button>
+      <button class="btn btn-o btn-s" onclick="addImgCard()">📷 上传图片</button>
+    </div></div>
+    <div style="margin-bottom:6px;display:flex;gap:4px;">${curGrp!=='状态'?`<button class="btn btn-o btn-s" onclick="renameGrp()">✏️ 重命名</button><button class="btn btn-d btn-s" onclick="delGrp()">🗑 删除</button>`:'<span style="font-size:11px;color:var(--text2);">状态分组不可删除</span>'}</div>
+    <div style="font-size:11px;color:var(--text2);margin-bottom:6px;">共 ${cards.length} 条 · 点击卡片删除</div>`;
+  for(let c of cards){
+    if(c.type==='img')h+=`<span class="card-tag" onclick="rmCard('${curGrp.replace(/'/g,"\\'")}','${c.val.replace(/'/g,"\\'")}')"><img src="${c.val}"> <span class=x>×</span></span>`;
+    else h+=`<span class="card-tag" onclick="rmCard('${curGrp.replace(/'/g,"\\'")}','${c.val.replace(/'/g,"\\'").replace(/"/g,'&quot;')}')">${c.val} <span class=x>×</span></span>`;
+  }
+  el.innerHTML=h;
+}
+function addTextCard(){
+  let inp=document.getElementById('newCardTxt');if(!inp)return;
+  let txt=inp.value.trim();if(!txt)return;
+  if(!D.cards[curGrp])D.cards[curGrp]=[];
+  let lines=txt.split('\n').map(l=>l.trim()).filter(Boolean);
+  let added=0,skipped=0;
+  for(let line of lines){
+    if(!D.cards[curGrp].find(c=>c.val===line)){D.cards[curGrp].push({type:'text',val:line});added++;}
+    else skipped++;
+  }
+  sv();renderCards();
+  if(added)toast(`已添加 ${added} 条`+(skipped?`，跳过 ${skipped} 条重复`:''));
+  else toast('全部重复，已跳过');
+  inp.value='';
+}
+async function addImgCard(){
+  let u=await pickImg(300,300,0.7);if(!u)return;
+  if(!D.cards[curGrp])D.cards[curGrp]=[];
+  D.cards[curGrp].push({type:'img',val:u});sv();renderCards();
+}
+function rmCard(g,v){if(!D.cards[g])return;D.cards[g]=D.cards[g].filter(c=>c.val!==v);sv();renderCards();}
+function addGrp(){
+  let n=prompt('新分组名称（将添加到「聊天内容」中）：');
+  if(!n||!n.trim())return;let t=n.trim();
+  if(D.cards[t]){toast('分组已存在');return;}
+  D.cards[t]=[];sv();closeModal();openCards();
+}
+function renameGrp(){
+  let old=curGrp,n=prompt('重命名：',old);if(!n||!n.trim()||n.trim()===old)return;
+  let t=n.trim();if(D.cards[t]){toast('分组名已存在');return;}
+  D.cards[t]=D.cards[old];delete D.cards[old];
+  for(let ct of D.contacts){
+    if(ct.cardGroups&&ct.cardGroups.includes(old))ct.cardGroups=ct.cardGroups.map(g=>g===old?t:g);
+    if(ct.members)for(let m of ct.members){if(m.cardGroups&&m.cardGroups.includes(old))m.cardGroups=m.cardGroups.map(g=>g===old?t:g);}
+  }
+  curGrp=t;sv();closeModal();openCards();
+}
+function delGrp(){
+  if(curGrp==='状态'){toast('状态分组不可删除');return;}
+  if(!confirm('确定删除分组「'+curGrp+'」？'))return;
+  delete D.cards[curGrp];sv();
+  if(!Object.keys(D.cards).length){D.cards['日常']=[];D.cards['状态']=[];}
+  closeModal();openCards();
+}
+
+// ===== LETTERS =====
+function openLetters(){
+  let h=`<div style="margin-bottom:10px;"><button class="btn btn-p btn-s" onclick="writeLetter()">✍️ 写一封信</button></div>`;
+  if(!D.letters.length)h+='<div class=empty>暂无书信</div>';
+  else{for(let l of D.letters){
+    h+=`<div style="background:#fafafa;border:1px solid var(--border);border-radius:8px;padding:12px;margin-bottom:8px;">
+      <div style="font-weight:600;">致「${l.toName}」</div><div style="font-size:13px;color:var(--text2);margin:4px 0;">${l.content.slice(0,40)}...</div>
+      <div style="font-size:11px;color:var(--text2);">${l.delivered?'已送达 '+fmtTime(l.deliverAt):'预计送达 '+fmtTime(l.deliverAt)}</div>
+      <span style="font-size:11px;padding:2px 8px;border-radius:10px;${l.delivered?'background:#d4edda;color:#155724':'background:#fff3cd;color:#856404'}">${l.delivered?'已送达':'寄送中'}</span>
+      ${l.delivered&&l.replies?`<div style="margin-top:6px;font-size:12px;color:var(--link);cursor:pointer;" onclick="viewLetterReply('${l.id}')">💌 查看回信 (${l.replies.length}条)</div>`:''}</div>`;}
+  }
+  modal(h,`<button class="btn btn-o" onclick="closeModal()">关闭</button>`);
+}
+function writeLetter(){
+  let cs=D.contacts.filter(c=>!c.isGroup);
+  if(!cs.length){toast('需要先创建联系人');return;}
+  let opts=cs.map(c=>`<option value="${c.id}">${c.name}</option>`).join('');
+  let lc=D.cards['写信内容']||[];
+  let def=lc.length?pr(lc).val:'最近还好吗？';
+  let h=`<div class="fg"><span class="fl">收信人</span><select class="fi" id="ltTo">${opts}</select></div>
+    <div class="fg"><span class="fl">内容</span><textarea class="fi" id="ltCt" rows="4">${def}</textarea></div>
+    <div style="font-size:11px;color:var(--text2);">📮 ${D.settings.letterDays[0]}-${D.settings.letterDays[1]}天内送达</div>`;
+  modal(h,`<button class="btn btn-o" onclick="openLetters()">取消</button><button class="btn btn-p" onclick="svLetter()">寄出</button>`);
+}
+function svLetter(){
+  let toId=document.getElementById('ltTo').value,ct=document.getElementById('ltCt').value.trim();
+  if(!ct){toast('请写下内容');return;}
+  let con=gc(toId);if(!con)return;
+  let dd=rd(D.settings.letterDays[0],D.settings.letterDays[1]);
+  D.letters.push({id:uid(),toId,toName:con.name,content:ct,sentAt:Date.now(),deliverAt:Date.now()+dd*86400000,delivered:false,replies:[]});
+  sv();closeModal();toast('✉️ 已寄出，预计'+dd+'天后送达');
+}
+function viewLetterReply(lid){
+  let l=D.letters.find(x=>x.id===lid);if(!l||!l.replies)return;
+  let h=`<div style="font-weight:600;margin-bottom:8px;">💌 「${l.toName}」的回信</div>`;
+  for(let r of l.replies)h+=`<div style="background:#f7f7f7;padding:8px 10px;border-radius:6px;margin-bottom:6px;font-size:13px;"><span style="color:var(--link);font-weight:600;">${r.from}</span>: ${r.text}</div>`;
+  h+=`<div style="font-size:11px;color:var(--text2);margin-top:8px;">原件：${l.content}</div>`;
+  modal(h,`<button class="btn btn-o" onclick="openLetters()">返回</button>`);
+}
+
+// ===== SETTINGS =====
+function openSettings(){
+  let s=D.settings;
+  let h=`<div class="fg"><span class="fl">回复延迟（秒）</span><div class="fr"><input class="fi" id="sDlyMin" value="${s.replyDelay[0]}" type="number" min="1" style="width:70px;"> - <input class="fi" id="sDlyMax" value="${s.replyDelay[1]}" type="number" min="1" style="width:70px;"></div></div>
+    <div class="fg"><span class="fl">回复条数</span><div class="fr"><input class="fi" id="sCntMin" value="${s.replyCount[0]}" type="number" min="1" max="10" style="width:70px;"> - <input class="fi" id="sCntMax" value="${s.replyCount[1]}" type="number" min="1" max="10" style="width:70px;"></div></div>
+    <div class="fg"><span class="fl">对方的主动联系延时（分钟）</span><input class="fi" id="sActive" value="${s.activeDelay||5}" type="number" min="1" max="120"></div>
+    <div class="fg"><span class="fl">通话接听率</span><input class="fi" id="sCall" value="${s.callAnswer}" type="number" min="0" max="1" step="0.1"></div>
+    <div class="fg"><span class="fl">主动来电概率/小时</span><input class="fi" id="sCallA" value="${s.callActiveChance}" type="number" min="0" max="1" step="0.01"></div>
+    <div class="fg"><span class="fl">状态更新间隔（小时）</span><input class="fi" id="sStI" value="${s.statusInterval}" type="number" min="1" max="48"></div>
+    <div class="fg"><span class="fl">状态更新概率</span><input class="fi" id="sStP" value="${s.statusProb}" type="number" min="0" max="1" step="0.1"></div>
+    <div class="fg"><span class="fl">信件送达（天）</span><div class="fr"><input class="fi" id="sLtMin" value="${s.letterDays[0]}" type="number" min="1" style="width:70px;"> - <input class="fi" id="sLtMax" value="${s.letterDays[1]}" type="number" min="1" style="width:70px;"></div></div>
+    <div class="fg"><span class="fl">回信件数</span><div class="fr"><input class="fi" id="sLrMin" value="${s.letterReplies[0]}" type="number" min="1" style="width:70px;"> - <input class="fi" id="sLrMax" value="${s.letterReplies[1]}" type="number" min="1" style="width:70px;"></div></div>`;
+  modal(h,`<button class="btn btn-o" onclick="closeModal()">取消</button><button class="btn btn-p" onclick="svSettings()">保存</button>`);
+}
+function svSettings(){
+  D.settings.replyDelay=[parseInt(document.getElementById('sDlyMin').value)||3,parseInt(document.getElementById('sDlyMax').value)||180];
+  D.settings.replyCount=[parseInt(document.getElementById('sCntMin').value)||1,parseInt(document.getElementById('sCntMax').value)||5];
+  D.settings.activeDelay=parseInt(document.getElementById('sActive').value)||5;
+  D.settings.callAnswer=parseFloat(document.getElementById('sCall').value)||0.5;
+  D.settings.callActiveChance=parseFloat(document.getElementById('sCallA').value)||0.01;
+  D.settings.statusInterval=parseInt(document.getElementById('sStI').value)||5;
+  D.settings.statusProb=parseFloat(document.getElementById('sStP').value)||0.5;
+  D.settings.letterDays=[parseInt(document.getElementById('sLtMin').value)||1,parseInt(document.getElementById('sLtMax').value)||7];
+  D.settings.letterReplies=[parseInt(document.getElementById('sLrMin').value)||5,parseInt(document.getElementById('sLrMax').value)||30];
+  sv();closeModal();toast('设置已保存');
+}
+
+// ===== IMPORT/EXPORT =====
+function exportData(){
+  let out={me:D.me,cards:D.cards,contacts:D.contacts,moments:D.moments,letters:D.letters,settings:D.settings,bg:D.bg};
+  let json=JSON.stringify(out,null,2),b=new Blob([json],{type:'application/json'}),u=URL.createObjectURL(b);
+  let a=document.createElement('a');a.href=u;a.download='暖信_备份_'+new Date().toISOString().slice(0,10)+'.json';a.click();
+  URL.revokeObjectURL(u);toast('已导出');
+}
+function importData(){
+  let inp=document.createElement('input');inp.type='file';inp.accept='.json';
+  inp.onchange=e=>{let f=e.target.files[0];if(!f)return;let r=new FileReader();
+    r.onload=ev=>{try{let data=JSON.parse(ev.target.result);
+      if(data.me)D.me=data.me;if(data.cards)D.cards=data.cards;if(data.contacts)D.contacts=data.contacts;
+      if(data.settings)D.settings=data.settings;if(data.moments)D.moments=data.moments;
+      if(data.letters)D.letters=data.letters||[];if(data.bg)D.bg=data.bg||{};
+      sv();renderAll();toast('导入成功！');
+    }catch(x){toast('文件格式错误');}};r.readAsText(f);};inp.click();
+}
+
+// ===== MOMENTS AUTO (contacts like/reply within 24h) =====
+function momentsCheck(){
+  let now=Date.now();
+  // Contacts interact with recent posts (within 24h)
+  for(let p of D.moments){
+    if(!p._createdAt)continue;
+    let age=now-p._createdAt;
+    if(age>86400000)continue; // Only within 24 hours
+    if(rf()<D.settings.momentsLike*0.3){ // Spread out over the day
+      let l=pr(D.contacts);if(!p._likes)p._likes=[];
+      if(!p._likes.includes(l.name))p._likes.push(l.name);
     }
-    
-    // 删除字卡
-    function deleteCardAtIndex(index) {
-        if (index < 0 || index >= cardDeck.length) return;
-        const deletedCard = cardDeck[index];
-        if (confirm(`确定要删除字卡「${deletedCard}」吗？`)) {
-            cardDeck.splice(index, 1);
-            saveCardDeck();
-            renderCardList();
-            addSystemTip(`🗑️ 已删除字卡: “${deletedCard}”`);
-            // 如果字卡变为空，并且没有回复功能不会有副作用；但下次回复会提示
-            if (cardDeck.length === 0) {
-                addSystemTip("⚠️ 字卡库已空，对方将无法回复，请添加新字卡~");
-            }
-        }
+    if(rf()<D.settings.momentsComment*0.3){
+      let cm=pr(D.contacts),cmCards=allCards(Object.keys(D.cards).filter(g=>g!=='状态'));
+      if(!p._comments)p._comments=[];
+      p._comments.push({name:cm.name,text:cmCards.length?pr(cmCards).val:'👍'});
     }
-    
-    // 添加新字卡
-    function addNewCard() {
-        let newCardText = newCardInput.value.trim();
-        if (newCardText === "") {
-            alert("字卡内容不能为空");
-            return;
-        }
-        if (newCardText.length > 80) {
-            alert("字卡内容太长，请控制在80字符以内");
-            return;
-        }
-        // 可选去重? 允许重复，更有随机性
-        cardDeck.push(newCardText);
-        saveCardDeck();
-        renderCardList();
-        newCardInput.value = "";
-        addSystemTip(`✨ 新字卡已加入: “${newCardText}”`);
-    }
-    
-    // 系统提示消息（不影响聊天主体，只做提示）
-    function addSystemTip(msg) {
-        // 小提示淡入淡出样式？为了不干扰，简单在聊天区顶部显示临时提示? 但最好作为一个普通消息?
-        // 为了更好体验，在聊天区添加一个灰色小提示，不是重要对话，用特殊样式。但不干扰主体，选用短暂通知气泡风格。
-        const tipDiv = document.createElement('div');
-        tipDiv.style.cssText = 'text-align:center; font-size:0.7rem; color:#b48c68; margin:6px 0; animation:fadeSlideUp 0.2s;';
-        tipDiv.innerText = `🔔 ${msg}`;
-        messagesContainer.appendChild(tipDiv);
-        messagesContainer.scrollTop = messagesContainer.scrollHeight;
-        setTimeout(() => {
-            if(tipDiv.parentNode) tipDiv.remove();
-        }, 2500);
-    }
-    
-    // 重置回复定时器（页面关闭时避免执行）
-    window.addEventListener('beforeunload', () => {
-        clearAllPendingTimers();
-    });
-    
-    // 处理回车发送
-    function initEventListeners() {
-        sendBtn.addEventListener('click', sendUserMessage);
-        messageInput.addEventListener('keypress', (e) => {
-            if (e.key === 'Enter') {
-                e.preventDefault();
-                sendUserMessage();
-            }
-        });
-        manualReplyBtn.addEventListener('click', () => {
-            // 手动触发对方随机回复（多条）
-            manualOpponentReply();
-        });
-        addCardBtn.addEventListener('click', addNewCard);
-        // 也可以给新字卡输入框回车添加
-        newCardInput.addEventListener('keypress', (e) => {
-            if (e.key === 'Enter') {
-                e.preventDefault();
-                addNewCard();
-            }
-        });
-    }
-    
-    // 额外保险: 在字卡更新时确保外部调用可以继续，无副作用
-    function init() {
-        loadCardDeck();          // 加载字卡库 (localStorage 或默认)
-        renderCardList();       // 渲染右侧字卡列表
-        initEventListeners();   // 绑定UI事件
-        // 可选: 展示一条欢迎，但不重复添加，因为html已有欢迎消息，无需重复
-        // 确保对方刚进来时字卡库不为空，如果空则提示
-        if (cardDeck.length === 0) {
-            addSystemTip("📌 字卡库是空的！请在右侧添加一些字卡，对方才能回复你哟");
-        } else {
-            // 可展示目前字卡数量
-            addSystemTip(`📚 当前字卡库共 ${cardDeck.length} 张字卡，对方将随机选用回复`);
-        }
-    }
-    
-    // 开始
-    init();
+  }
+  sv();
+}
+
+// ===== TOAST =====
+function toast(m){let e=document.getElementById('toast');e.textContent=m;e.classList.add('show');clearTimeout(e._t);e._t=setTimeout(()=>e.classList.remove('show'),2000);}
+
+// ===== TAB =====
+function switchTab(t){
+  curTab=t;
+  document.querySelectorAll('.page').forEach(p=>p.classList.remove('on'));
+  document.getElementById('tab-'+t).classList.add('on');
+  document.querySelectorAll('#tabbar .tb').forEach(b=>{b.style.color='';b.classList.remove('on');});
+  let ab=document.querySelector(`#tabbar .tb[data-tab="${t}"]`);
+  if(ab)ab.classList.add('on');
+  if(t==='chats')renderChats();
+  if(t==='contacts')renderCts();
+  if(t==='discover'){momentsCheck();renderMoments();}
+  if(t==='me')renderMe();
+  if(curChat&&t!=='chats'&&window.innerWidth<768)closeChat();
+}
+function renderAll(){renderChats();renderCts();renderMoments();renderMe();}
+
+// ===== BIND =====
+function bind(){
+  document.querySelectorAll('#tabbar .tb').forEach(b=>b.addEventListener('click',()=>switchTab(b.dataset.tab)));
+  document.getElementById('btnNewChat').addEventListener('click',()=>switchTab('contacts'));
+  document.getElementById('btnNewCt').addEventListener('click',openNewCt);
+  document.getElementById('btnCvBack').addEventListener('click',closeChat);
+  document.getElementById('btnCvCall').addEventListener('click',()=>{if(curChat)startCall(curChat);});
+  document.getElementById('btnCvMenu').addEventListener('click',toggleCvMenu);
+  document.getElementById('btnSnd').addEventListener('click',sendMsg);
+  document.getElementById('msgInp').addEventListener('keydown',e=>{if(e.key==='Enter'&&!e.shiftKey){e.preventDefault();sendMsg();}});
+  document.getElementById('pfCard').addEventListener('click',editProfile);
+  document.getElementById('btnCards').addEventListener('click',openCards);
+  document.getElementById('btnLetters').addEventListener('click',openLetters);
+  document.getElementById('btnSettings').addEventListener('click',openSettings);
+  document.getElementById('btnExport').addEventListener('click',exportData);
+  document.getElementById('btnImport').addEventListener('click',importData);
+  document.getElementById('btnPostMoment').addEventListener('click',postMoment);
+  // Close menu on outside click
+  document.addEventListener('click',e=>{if(!e.target.closest('#cvMenu')&&!e.target.closest('#btnCvMenu'))closeCvMenu();});
+  // Call minimize button (delegated)
+  document.getElementById('call-v').addEventListener('click',e=>{if(e.target.id==='btnMinCall')minimizeCall();});
+  document.getElementById('chatList').addEventListener('contextmenu',e=>{
+    let ci=e.target.closest('.chat-item');if(ci){e.preventDefault();let m=ci.getAttribute('onclick')?.match(/'([^']+)'/);if(m)editCt(m[1]);}
+  });
+}
+
+// ===== INIT =====
+function init(){
+  ld();
+  if(!D.cards||!Object.keys(D.cards).length)D.cards={'日常':[{type:'text',val:'你好呀~ 🌞'},{type:'text',val:'在干嘛呢？'},{type:'text',val:'今天天气真好 ☀️'},{type:'text',val:'哈哈哈哈哈 😂'},{type:'text',val:'真的假的！'},{type:'text',val:'早点休息哦 🌙'},{type:'text',val:'记得吃饭！'},{type:'text',val:'😊'},{type:'text',val:'😂'},{type:'text',val:'🥰'},{type:'text',val:'[贴贴]'},{type:'text',val:'[暗中观察]'}],'状态':[{type:'text',val:'在线'},{type:'text',val:'摸鱼中 🐟'},{type:'text',val:'忙碌中...'},{type:'text',val:'睡觉中 😴'},{type:'text',val:'元气满满 ✨'},{type:'text',val:'搬砖中 🧱'}]};
+  if(!D.contacts||!D.contacts.length)D.contacts=[{id:'c1',name:'小明',avatar:'',cardGroups:['日常']},{id:'c2',name:'小红',avatar:'',cardGroups:['日常']},{id:'c3',name:'阿杰',avatar:'',cardGroups:['日常']}];
+  if(!D.settings)D.settings={replyDelay:[3,180],replyCount:[1,5],activeDelay:5,callAnswer:0.5,callActiveChance:0.01,statusInterval:5,statusProb:0.5,letterDays:[1,7],letterReplies:[5,30],momentsLike:0.6,momentsComment:0.3};
+  if(!D.moments)D.moments=[];
+  if(!D.letters)D.letters=[];
+  if(!D.pending)D.pending={};
+  if(!D.pendingActive)D.pendingActive={};
+  if(!D.bg)D.bg={};
+  if(!D._lastStatus)D._lastStatus=Date.now();
+  let sc=D.cards['状态']||[];
+  for(let ct of D.contacts){if(!ct._status)ct._status=sc.length?pr(sc).val:'在线';}
+  for(let p of D.moments){if(!p._id)p._id=uid();if(!p._likes)p._likes=[];if(!p._comments)p._comments=[];if(!p._createdAt)p._createdAt=Date.now();}
+  for(let ms of Object.values(D.msgs)){for(let m of ms){if(m._read===undefined)m._read=true;}}
+  sv();renderAll();bind();
+  simTimer=setInterval(checkSim,5000);
+  momentsCheck();
+}
+init();
+
+document.addEventListener('visibilitychange',()=>{
+  if(!document.hidden){checkSim();momentsCheck();if(curTab==='chats')renderChats();if(curTab==='discover')renderMoments();if(curChat){renderMsgs();updateTyping();}}
+});
 </script>
 </body>
 </html>
