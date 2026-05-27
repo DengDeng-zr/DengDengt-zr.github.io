@@ -1,25 +1,26 @@
-<!DOCTYPE html>
 <html lang="zh-CN">
 <head>
 <meta charset="UTF-8">
 <meta name="viewport" content="width=device-width,initial-scale=1,maximum-scale=1,user-scalable=no,viewport-fit=cover">
 <title>暖信</title>
+<!-- iconfont.cn 图标库：替换下方 href 为你的项目链接 -->
+<link rel="stylesheet" href="//at.alicdn.com/t/c/font_XXXXXXX.css">
 <style>
 :root {
-  --bg: #ededed;
-  --card: #fff;
-  --sent: #95ec69;
-  --received: #fff;
-  --text: #191919;
-  --text2: #888;
-  --border: #e5e5e5;
-  --tab-on: #07c160;
-  --tab-off: #666;
-  --link: #576b95;
-  --danger: #e74c3c;
+  --bg: #F8F3DD;
+  --bar: #F7D4AD;
+  --card: #F8F3DD;
+  --text: #4a3728;
+  --text2: #8b7a6a;
+  --border: #e8dcc8;
+  --tab-on: #c89460;
+  --tab-off: #b8a080;
+  --link: #8b6914;
+  --danger: #c0392b;
 }
+.icof { width:1em; height:1em; vertical-align:-.15em; fill:currentColor; overflow:hidden; }
 * { margin:0; padding:0; box-sizing:border-box; }
-html,body { height:100%; overflow:hidden; background:#d5d5d5; }
+html,body { height:100%; overflow:hidden; background:#F8F3DD; }
 body {
   font-family:-apple-system,BlinkMacSystemFont,"PingFang SC","Microsoft YaHei",sans-serif;
   color:var(--text); -webkit-tap-highlight-color:transparent;
@@ -52,8 +53,8 @@ body {
 .page.on { display:block; }
 
 /* Chat list */
-.chat-item { display:flex; align-items:center; padding:12px 16px; gap:10px; cursor:pointer; background:var(--card); border-bottom:1px solid #f0f0f0; }
-.chat-item:active { background:#f5f5f5; }
+.chat-item { display:flex; align-items:center; padding:12px 16px; gap:10px; cursor:pointer; background:var(--card); border-bottom:1px solid var(--border); }
+.chat-item:active { background:#ecd4a0; }
 .av { width:44px; height:44px; border-radius:6px; flex-shrink:0; display:flex; align-items:center; justify-content:center; font-size:18px; font-weight:600; color:#fff; overflow:hidden; background:#d9d9d9; }
 .av img { width:100%; height:100%; object-fit:cover; }
 .ci { flex:1; min-width:0; }
@@ -65,8 +66,8 @@ body {
 
 /* Contacts */
 .cl { font-size:12px; color:var(--text2); padding:4px 16px; background:var(--bg); }
-.ct-item { display:flex; align-items:center; padding:10px 16px; gap:10px; cursor:pointer; background:var(--card); border-bottom:1px solid #f0f0f0; }
-.ct-item:active { background:#f5f5f5; }
+.ct-item { display:flex; align-items:center; padding:10px 16px; gap:10px; cursor:pointer; background:var(--card); border-bottom:1px solid var(--border); }
+.ct-item:active { background:#ecd4a0; }
 
 /* Moments */
 .m-item { background:var(--card); padding:14px 16px; margin-bottom:8px; }
@@ -77,9 +78,9 @@ body {
 .m-time { font-size:11px; color:var(--text2); }
 .m-content { font-size:15px; line-height:1.5; margin-bottom:8px; }
 .m-img { max-width:100%; border-radius:4px; margin-bottom:8px; }
-.m-acts { display:flex; gap:20px; padding-top:6px; border-top:1px solid #f0f0f0; }
+.m-acts { display:flex; gap:20px; padding-top:6px; border-top:1px solid var(--border); }
 .m-acts span { font-size:13px; color:var(--text2); cursor:pointer; }
-.m-cmts { margin-top:6px; background:#f7f7f7; padding:6px 10px; font-size:13px; }
+.m-cmts { margin-top:6px; background:var(--received); padding:6px 10px; font-size:13px; }
 .m-cmts .n { font-weight:600; color:var(--link); }
 
 /* Me */
@@ -89,8 +90,8 @@ body {
 .pf-name { font-size:18px; font-weight:600; }
 .pf-st { font-size:12px; color:var(--text2); margin-top:2px; }
 .mg { margin-bottom:12px; }
-.menu-item { display:flex; align-items:center; justify-content:space-between; padding:13px 16px; background:var(--card); font-size:15px; border-bottom:1px solid #f0f0f0; cursor:pointer; }
-.menu-item:active { background:#f5f5f5; }
+.menu-item { display:flex; align-items:center; justify-content:space-between; padding:13px 16px; background:var(--card); font-size:15px; border-bottom:1px solid var(--border); cursor:pointer; }
+.menu-item:active { background:#ecd4a0; }
 .menu-item .arr { color:#ccc; font-size:16px; }
 
 /* Chat view */
@@ -109,13 +110,13 @@ body {
 .msg-row.me { align-self:flex-end; flex-direction:row-reverse; }
 .msg-row.you { align-self:flex-start; }
 .msg-bbl { padding:9px 12px; border-radius:6px; font-size:15px; line-height:1.45; word-break:break-word; }
-.me .msg-bbl { background:var(--sent); border-top-right-radius:2px; }
-.you .msg-bbl { background:var(--received); border-top-left-radius:2px; }
+.me .msg-bbl { background:var(--bar); border-top-right-radius:2px; }
+.you .msg-bbl { background:#fff; border-top-left-radius:2px; }
 .msg-av { width:34px; height:34px; border-radius:4px; flex-shrink:0; display:flex; align-items:center; justify-content:center; font-size:14px; font-weight:600; color:#fff; overflow:hidden; background:#d9d9d9; align-self:flex-end; }
 .msg-av img { width:100%; height:100%; object-fit:cover; }
 .msg-nm { font-size:10px; color:var(--text2); margin-bottom:2px; }
 .msg-img { max-width:160px; max-height:160px; border-radius:4px; display:block; cursor:pointer; }
-.input-bar { padding:8px 10px; background:#f7f7f7; border-top:1px solid var(--border); display:flex; gap:8px; align-items:flex-end; flex-shrink:0; padding-bottom:calc(8px + env(safe-area-inset-bottom)); }
+.input-bar { padding:8px 10px; background:var(--bg); border-top:1px solid var(--border); display:flex; gap:8px; align-items:flex-end; flex-shrink:0; padding-bottom:calc(8px + env(safe-area-inset-bottom)); }
 .input-bar textarea { flex:1; border:1px solid var(--border); border-radius:6px; padding:8px 10px; font-size:15px; outline:none; resize:none; background:var(--card); font-family:inherit; max-height:80px; line-height:1.4; }
 .input-bar textarea:focus { border-color:var(--tab-on); }
 .input-bar .snd { background:var(--tab-on); color:#fff; border:none; border-radius:6px; padding:8px 16px; font-size:14px; cursor:pointer; flex-shrink:0; }
@@ -124,12 +125,12 @@ body {
 /* Chat menu dropdown */
 .cv-menu { position:absolute; top:44px; right:8px; background:var(--card); border-radius:8px; box-shadow:0 4px 16px rgba(0,0,0,.12); z-index:25; display:none; min-width:160px; overflow:hidden; }
 .cv-menu.show { display:block; }
-.cv-menu div { padding:12px 16px; font-size:14px; cursor:pointer; border-bottom:1px solid #f0f0f0; }
+.cv-menu div { padding:12px 16px; font-size:14px; cursor:pointer; border-bottom:1px solid var(--border); }
 .cv-menu div:last-child { border-bottom:none; }
-.cv-menu div:active { background:#f5f5f5; }
+.cv-menu div:active { background:#ecd4a0; }
 
 /* Tab bar */
-#tabbar { display:flex; background:#f7f7f7; border-top:1px solid var(--border); flex-shrink:0; padding-bottom:env(safe-area-inset-bottom); z-index:30; }
+#tabbar { display:flex; background:var(--bar); border-top:1px solid var(--border); flex-shrink:0; padding-bottom:env(safe-area-inset-bottom); z-index:30; }
 #tabbar button { flex:1; background:none; border:none; padding:6px 0 4px; cursor:pointer; font-size:10px; text-align:center; color:var(--tab-off); }
 #tabbar button .ico { font-size:20px; display:block; margin-bottom:1px; }
 #tabbar button.on { color:var(--tab-on); }
@@ -139,14 +140,14 @@ body {
 .modal-bg.open { display:flex; }
 .modal { background:var(--card); border-radius:12px 12px 0 0; width:100%; max-width:480px; max-height:85vh; display:flex; flex-direction:column; animation:up .25s ease; }
 @keyframes up { from{transform:translateY(100%)} to{transform:translateY(0)} }
-.modal-hd { display:flex; align-items:center; justify-content:space-between; padding:12px 16px; border-bottom:1px solid var(--border); flex-shrink:0; }
+.modal-hd { display:flex; align-items:center; justify-content:space-between; padding:12px 16px; border-bottom:1px solid var(--border); flex-shrink:0; background:var(--bg); }
 .modal-hd h3 { font-size:15px; font-weight:600; }
 .modal-close { background:none; border:none; font-size:18px; color:var(--text2); cursor:pointer; }
 .modal-body { flex:1; overflow-y:auto; padding:14px 16px; }
-.modal-ft { padding:10px 16px; border-top:1px solid var(--border); display:flex; gap:8px; flex-shrink:0; }
+.modal-ft { padding:10px 16px; border-top:1px solid var(--border); display:flex; gap:8px; flex-shrink:0; background:var(--bg); }
 .btn { padding:8px 18px; border-radius:6px; font-size:14px; cursor:pointer; border:none; font-family:inherit; font-weight:500; }
 .btn-p { background:var(--tab-on); color:#fff; } .btn-p:active { opacity:.8; }
-.btn-o { background:transparent; border:1px solid var(--border); color:var(--text); } .btn-o:active { background:#f5f5f5; }
+.btn-o { background:transparent; border:1px solid var(--border); color:var(--text); } .btn-o:active { background:#ecd4a0; }
 .btn-d { background:var(--danger); color:#fff; } .btn-d:active { opacity:.8; }
 .btn-s { padding:4px 10px; font-size:12px; border-radius:4px; }
 .fg { margin-bottom:12px; }
@@ -158,12 +159,12 @@ body {
 
 /* Card editor */
 .ce { display:flex; height:45vh; border:1px solid var(--border); border-radius:8px; overflow:hidden; }
-.ce-l { width:110px; border-right:1px solid var(--border); overflow-y:auto; flex-shrink:0; background:#fafafa; }
-.ce-l .gi { padding:10px 12px; cursor:pointer; font-size:13px; border-bottom:1px solid #f0f0f0; }
-.ce-l .gi.on { background:#e6f9ed; color:var(--tab-on); font-weight:600; }
+.ce-l { width:110px; border-right:1px solid var(--border); overflow-y:auto; flex-shrink:0; background:var(--card); }
+.ce-l .gi { padding:10px 12px; cursor:pointer; font-size:13px; border-bottom:1px solid var(--border); }
+.ce-l .gi.on { background:#ecd4a0; color:#6b3a20; font-weight:600; }
 .ce-r { flex:1; overflow-y:auto; padding:8px; }
-.card-tag { display:flex; align-items:center; gap:6px; background:#f7f7f7; border:1px solid var(--border); padding:6px 10px; border-radius:8px; margin-bottom:4px; font-size:13px; cursor:pointer; }
-.card-tag:active { background:#e5e5e5; }
+.card-tag { display:flex; align-items:center; gap:6px; background:var(--card); border:1px solid var(--border); padding:6px 10px; border-radius:8px; margin-bottom:4px; font-size:13px; cursor:pointer; }
+.card-tag:active { background:#ecd4a0; }
 .card-tag .x { color:var(--danger); font-weight:bold; flex-shrink:0; }
 .card-tag img { width:36px; height:36px; border-radius:4px; object-fit:cover; }
 
@@ -199,8 +200,10 @@ body {
 ::-webkit-scrollbar { width:0; }
 /* Checkbox list */
 .cb-list { max-height:300px; overflow-y:auto; }
-.cb-item { display:flex; align-items:center; gap:10px; padding:10px 0; border-bottom:1px solid #f0f0f0; cursor:pointer; }
+.cb-item { display:flex; align-items:center; gap:10px; padding:10px 0; border-bottom:1px solid var(--border); cursor:pointer; }
 .cb-item input { width:18px; height:18px; accent-color:var(--tab-on); }
+.card-search { width:100%; padding:6px 10px; border:1px solid var(--border); border-radius:6px; font-size:13px; background:var(--card); font-family:inherit; outline:none; margin-bottom:8px; }
+.card-search:focus { border-color:var(--tab-on); }
 </style>
 </head>
 <body>
@@ -217,7 +220,7 @@ body {
   </div>
   <!-- Tab: 发现 -->
   <div id="tab-discover" class="page">
-    <div class="hd">朋友圈<button class="hdr" id="btnPostMoment">📷</button></div>
+    <div class="hd">朋友圈<button class="hdr" id="btnPostMoment"><svg viewBox="0 0 24 24" width="20" height="20"><rect x="2" y="4" width="20" height="16" rx="2" fill="none" stroke="currentColor" stroke-width="2"/><circle cx="8.5" cy="10.5" r="2" fill="none" stroke="currentColor" stroke-width="1.5"/><polyline points="22,16 17,11 10,18" fill="none" stroke="currentColor" stroke-width="1.5"/></svg></button></div>
     <div id="momentsFeed"></div>
   </div>
   <!-- Tab: 我 -->
@@ -227,13 +230,13 @@ body {
       <div><div class="pf-name" id="myNm"></div><div class="pf-st" id="mySt"></div></div>
     </div>
     <div class="mg">
-      <div class="menu-item" id="btnCards">📝 字卡库 <span class="arr">›</span></div>
-      <div class="menu-item" id="btnLetters">✉️ 信箱 <span class="arr">›</span></div>
-      <div class="menu-item" id="btnSettings">⚙️ 设置 <span class="arr">›</span></div>
+      <div class="menu-item" id="btnCards"><svg viewBox="0 0 24 24" width="18" height="18" style="margin-right:8px;"><rect x="3" y="3" width="7" height="7" rx="1" fill="none" stroke="currentColor" stroke-width="1.5"/><rect x="14" y="3" width="7" height="7" rx="1" fill="none" stroke="currentColor" stroke-width="1.5"/><rect x="3" y="14" width="7" height="7" rx="1" fill="none" stroke="currentColor" stroke-width="1.5"/><rect x="14" y="14" width="7" height="7" rx="1" fill="none" stroke="currentColor" stroke-width="1.5"/></svg>字卡库 <span class="arr">›</span></div>
+      <div class="menu-item" id="btnLetters"><svg viewBox="0 0 24 24" width="18" height="18" style="margin-right:8px;"><rect x="2" y="4" width="20" height="16" rx="2" fill="none" stroke="currentColor" stroke-width="2"/><polyline points="2,6 12,14 22,6" fill="none" stroke="currentColor" stroke-width="1.5"/></svg>信箱 <span class="arr">›</span></div>
+      <div class="menu-item" id="btnSettings"><svg viewBox="0 0 24 24" width="18" height="18" style="margin-right:8px;"><circle cx="12" cy="12" r="3" fill="none" stroke="currentColor" stroke-width="2"/><path d="M12 1l2.5 5.5h5.5l-4 3.5 1.5 6-5.5-3.5-5.5 3.5 1.5-6-4-3.5h5.5z" fill="none" stroke="currentColor" stroke-width="1.5"/></svg>设置 <span class="arr">›</span></div>
     </div>
     <div class="mg">
-      <div class="menu-item" id="btnExport">📤 导出数据 <span class="arr">›</span></div>
-      <div class="menu-item" id="btnImport">📥 导入数据 <span class="arr">›</span></div>
+      <div class="menu-item" id="btnExport"><svg viewBox="0 0 24 24" width="18" height="18" style="margin-right:8px;"><path d="M12 3v12M7 11l5 5 5-5" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"/><path d="M5 17v2h14v-2" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round"/></svg>导出数据 <span class="arr">›</span></div>
+      <div class="menu-item" id="btnImport"><svg viewBox="0 0 24 24" width="18" height="18" style="margin-right:8px;"><path d="M12 21V9M7 15l5-5 5 5" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"/><path d="M5 7V5h14v2" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round"/></svg>导入数据 <span class="arr">›</span></div>
     </div>
   </div>
 
@@ -245,8 +248,8 @@ body {
         <div class="tname" id="cvName"></div>
         <div class="ttyping" id="cvTyping">正在输入<span class="dots"></span></div>
       </div>
-      <button class="more" id="btnCvCall" style="margin-right:4px;">📞</button>
-      <button class="more" id="btnCvMenu">⋯</button>
+      <button class="more" id="btnCvCall" style="margin-right:4px;"><svg viewBox="0 0 24 24" width="18" height="18"><path d="M22 16.92v3a2 2 0 01-2.18 2 19.79 19.79 0 01-8.63-3.07 19.5 19.5 0 01-6-6 19.79 19.79 0 01-3.07-8.67A2 2 0 014.11 2h3a2 2 0 012 1.72c.127.96.362 1.903.7 2.81a2 2 0 01-.45 2.11L8.09 9.91a16 16 0 006 6l1.27-1.27a2 2 0 012.11-.45c.907.338 1.85.573 2.81.7A2 2 0 0122 16.92z" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"/></svg></button>
+      <button class="more" id="btnCvMenu"><svg viewBox="0 0 24 24" width="18" height="18"><circle cx="12" cy="5" r="2" fill="currentColor"/><circle cx="12" cy="12" r="2" fill="currentColor"/><circle cx="12" cy="19" r="2" fill="currentColor"/></svg></button>
     </div>
     <div class="cv-menu" id="cvMenu">
       <div onclick="showChatInfo()">聊天详情</div>
@@ -262,10 +265,10 @@ body {
 
   <!-- Tab bar -->
   <nav id="tabbar">
-    <button data-tab="chats" class="tb on"><span class="ico">💬</span>微信</button>
-    <button data-tab="contacts" class="tb"><span class="ico">👥</span>通讯录</button>
-    <button data-tab="discover" class="tb"><span class="ico">🌿</span>发现</button>
-    <button data-tab="me" class="tb"><span class="ico">👤</span>我</button>
+    <button data-tab="chats" class="tb on"><span class="ico"><svg viewBox="0 0 24 24" width="20" height="20"><rect x="2" y="2" width="20" height="15" rx="2" fill="none" stroke="currentColor" stroke-width="2"/><line x1="7" y1="18" x2="7" y2="22" stroke="currentColor" stroke-width="2" stroke-linecap="round"/><line x1="17" y1="18" x2="17" y2="22" stroke="currentColor" stroke-width="2" stroke-linecap="round"/><line x1="2" y1="8" x2="22" y2="8" stroke="currentColor" stroke-width="1.5"/></svg></span>微信</button>
+    <button data-tab="contacts" class="tb"><span class="ico"><svg viewBox="0 0 24 24" width="20" height="20"><circle cx="9" cy="7" r="4" fill="none" stroke="currentColor" stroke-width="2"/><path d="M1 21v-2a4 4 0 014-4h8a4 4 0 014 4v2" fill="none" stroke="currentColor" stroke-width="2"/><circle cx="18" cy="7" r="3" fill="none" stroke="currentColor" stroke-width="1.5"/><path d="M21 20v-1.5a3 3 0 00-2-2.8" fill="none" stroke="currentColor" stroke-width="1.5"/></svg></span>通讯录</button>
+    <button data-tab="discover" class="tb"><span class="ico"><svg viewBox="0 0 24 24" width="20" height="20"><circle cx="12" cy="12" r="10" fill="none" stroke="currentColor" stroke-width="2"/><polygon points="12,2 13.5,8.5 20.5,8.5 15,13 17,20 12,16 7,20 9,13 3.5,8.5 10.5,8.5" fill="none" stroke="currentColor" stroke-width="1.5"/></svg></span>发现</button>
+    <button data-tab="me" class="tb"><span class="ico"><svg viewBox="0 0 24 24" width="20" height="20"><circle cx="12" cy="8" r="5" fill="none" stroke="currentColor" stroke-width="2"/><path d="M4 22c0-4.4 3.6-8 8-8s8 3.6 8 8" fill="none" stroke="currentColor" stroke-width="2"/></svg></span>我</button>
   </nav>
 </div>
 
@@ -278,7 +281,7 @@ body {
   <div class="call-st" id="callSt">正在呼叫...</div><div class="call-tm" id="callTm"></div>
   <div class="call-btns" id="callBtns">
     <button class="call-c" style="background:#888;color:#fff;" id="btnMinCall" title="缩小为浮窗">−</button>
-    <button class="call-c call-end" id="btnHang">📞</button>
+    <button class="call-c call-end" id="btnHang"><svg viewBox="0 0 24 24" width="22" height="22"><path d="M10.68 13.31a16.07 16.07 0 003.41 3.41l1.83-1.83a1.42 1.42 0 011.43-.36 15.9 15.9 0 004.45.7 1.42 1.42 0 011.4 1.42v3.42a1.42 1.42 0 01-1.4 1.42A18.24 18.24 0 013 6.4a1.42 1.42 0 011.42-1.4h3.42a1.42 1.42 0 011.42 1.4 15.9 15.9 0 00.7 4.45 1.42 1.42 0 01-.36 1.43z" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"/></svg></button>
   </div>
 </div>
 
@@ -287,8 +290,8 @@ body {
   <div class="av" style="width:40px;height:40px;font-size:16px;" id="icallAv"></div>
   <div><div style="font-weight:600;font-size:14px;" id="icallNm"></div><div style="font-size:11px;color:var(--text2);">语音来电</div></div>
   <div class="act">
-    <button class="call-c call-end" style="width:36px;height:36px;font-size:16px;" id="btnDecl">📞</button>
-    <button class="call-c call-ans" style="width:36px;height:36px;font-size:16px;" id="btnAcpt">📞</button>
+    <button class="call-c call-end" style="width:36px;height:36px;font-size:16px;" id="btnDecl"><svg viewBox="0 0 24 24" width="16" height="16"><path d="M10.68 13.31a16.07 16.07 0 003.41 3.41l1.83-1.83a1.42 1.42 0 011.43-.36 15.9 15.9 0 004.45.7 1.42 1.42 0 011.4 1.42v3.42a1.42 1.42 0 01-1.4 1.42A18.24 18.24 0 013 6.4a1.42 1.42 0 011.42-1.4h3.42a1.42 1.42 0 011.42 1.4 15.9 15.9 0 00.7 4.45 1.42 1.42 0 01-.36 1.43z" fill="none" stroke="#fff" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"/></svg></button>
+    <button class="call-c call-ans" style="width:36px;height:36px;font-size:16px;" id="btnAcpt"><svg viewBox="0 0 24 24" width="16" height="16"><path d="M10.68 13.31a16.07 16.07 0 003.41 3.41l1.83-1.83a1.42 1.42 0 011.43-.36 15.9 15.9 0 004.45.7 1.42 1.42 0 011.4 1.42v3.42a1.42 1.42 0 01-1.4 1.42A18.24 18.24 0 013 6.4a1.42 1.42 0 011.42-1.4h3.42a1.42 1.42 0 011.42 1.4 15.9 15.9 0 00.7 4.45 1.42 1.42 0 01-.36 1.43z" fill="none" stroke="#fff" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"/></svg></button>
   </div>
 </div>
 
@@ -308,7 +311,7 @@ let D={
   pending:{},
   pendingActive:{},
   bg:{},  // chat backgrounds per contact
-  settings:{replyDelay:[3,180],replyCount:[1,5],callAnswer:0.5,callActiveChance:0.01,statusInterval:5,statusProb:0.5,letterDays:[1,7],letterReplies:[5,30],momentsLike:0.6,momentsComment:0.3},
+  settings:{replyCount:[1,5],callAnswer:0.5,callActiveChance:0.01,statusInterval:5,statusProb:0.5,letterDays:[1,7],letterReplies:[5,30],momentsLike:0.6,momentsComment:0.3},
   _lastStatus:0,_lastMoments:''
 };
 let curTab='chats',curChat=null,curGrp=null;
@@ -332,7 +335,12 @@ function avHtml(av,sz,nm){
 function allCards(groups){
   let a=[];
   for(let g of groups){if(D.cards[g])a=a.concat(D.cards[g]);}
-  if(!a.length){let dg=D.cards['日常']||[];if(dg.length)a=dg;else a=[{type:'text',val:'嗯嗯'}];}
+  if(!a.length){
+    // Fallback: collect all cards from all non-status groups
+    let allGs=Object.keys(D.cards).filter(g=>g!=='状态');
+    for(let g of allGs){if(D.cards[g])a=a.concat(D.cards[g]);}
+  }
+  if(!a.length)a=[{type:'text',val:'你好呀~'}];
   return a;
 }
 
@@ -343,15 +351,22 @@ function genText(groups){
 }
 
 function genMsgs(contact,count){
-  let msgs=[],groups=contact.isGroup?[]:(contact.cardGroups&&contact.cardGroups.length?contact.cardGroups:Object.keys(D.cards).filter(g=>g!=='状态'));
+  let msgs=[];
+  let allNonStatus=Object.keys(D.cards).filter(g=>g!=='状态');
+  // Validate cardGroups — filter to only those that actually exist in D.cards
+  function validGroups(cgs){
+    if(!cgs||!cgs.length)return allNonStatus;
+    let valid=cgs.filter(g=>D.cards[g]&&D.cards[g].length);
+    return valid.length?valid:allNonStatus;
+  }
+  let groups=contact.isGroup?allNonStatus:validGroups(contact.cardGroups);
   let n=Math.min(count,10);
   for(let i=0;i<n;i++){
     let from=contact.name,av=contact.avatar||'',cg=groups;
     if(contact.isGroup&&contact.members&&contact.members.length){
-      let m=pr(contact.members);from=m.name;av=m.avatar||'';cg=m.cardGroups&&m.cardGroups.length?m.cardGroups:Object.keys(D.cards).filter(g=>g!=='状态');
+      let m=pr(contact.members);from=m.name;av=m.avatar||'';cg=validGroups(m.cardGroups);
     }
-    let cards=allCards(cg.length?cg:Object.keys(D.cards).filter(g=>g!=='状态'));
-    if(!cards.length)cards=[{type:'text',val:'嗯'}];
+    let cards=allCards(cg);
     let card=pr(cards);
     msgs.push({id:uid(),from,fromAvatar:av,text:card.val,time:Date.now(),type:card.type||'text',img:card.type==='img'?card.val:null});
   }
@@ -364,8 +379,10 @@ function contactStatus(c){
 }
 
 // ===== SIMULATION =====
-function schedReply(cid,delaySec){
-  D.pending[cid]={time:Date.now()+delaySec*1000,cid};
+function schedReply(cid,totalCount){
+  // Schedule first message after 1-30s; remaining messages follow one-by-one
+  let firstDelay=rd(1,30);
+  D.pending[cid]={time:Date.now()+firstDelay*1000,cid,remaining:totalCount||1};
   sv();
 }
 function checkSim(){
@@ -373,18 +390,30 @@ function checkSim(){
   for(let[cid,p]of Object.entries(D.pending)){
     if(now>=p.time){
       let ct=gc(cid);if(ct){
-        let ms=genMsgs(ct,rd(D.settings.replyCount[0],D.settings.replyCount[1]));
+        let ms=genMsgs(ct,1);
         gm(cid).push(...ms);
       }
-      delete D.pending[cid];ch=true;
+      p.remaining--;
+      if(p.remaining>0){
+        p.time=Date.now()+rd(1,30)*1000;
+      }else{
+        delete D.pending[cid];
+      }
+      ch=true;
       if(cid===curChat){renderMsgs();updateTyping();}
       renderChats();
     }
   }
   for(let[cid,p]of Object.entries(D.pendingActive||{})){
     if(now>=p.time){
-      let ct=gc(cid);if(ct){let ms=genMsgs(ct,rd(1,3));gm(cid).push(...ms);}
-      delete D.pendingActive[cid];ch=true;
+      let ct=gc(cid);if(ct){let ms=genMsgs(ct,1);gm(cid).push(...ms);}
+      p.remaining=(p.remaining||1)-1;
+      if(p.remaining>0){
+        p.time=Date.now()+rd(1,30)*1000;
+      }else{
+        delete D.pendingActive[cid];
+      }
+      ch=true;
       if(cid===curChat){renderMsgs();updateTyping();}
       renderChats();
     }
@@ -493,7 +522,7 @@ function commentMoment(id){
 
 function postMoment(){
   let h=`<div class="fg"><span class="fl">说点什么...</span><textarea class="fi" id="pmCt" rows="4" placeholder="分享你的想法..."></textarea></div>
-    <div class="fg"><span class="fl">图片（可选）</span><div id="pmImgPrv"></div><button class="btn btn-o btn-s" id="btnPickPmImg">📷 选择图片</button></div>`;
+    <div class="fg"><span class="fl">图片（可选）</span><div id="pmImgPrv"></div><button class="btn btn-o btn-s" id="btnPickPmImg"><svg viewBox="0 0 24 24" width="14" height="14" style="vertical-align:-2px;margin-right:2px;"><rect x="2" y="4" width="20" height="16" rx="2" fill="none" stroke="currentColor" stroke-width="2"/><circle cx="8.5" cy="10.5" r="2" fill="none" stroke="currentColor" stroke-width="1.5"/><polyline points="22,16 17,11 10,18" fill="none" stroke="currentColor" stroke-width="1.5"/></svg>选择图片</button></div>`;
   modal(h,`<button class="btn btn-o" onclick="closeModal()">取消</button><button class="btn btn-p" onclick="svMoment()">发布</button>`);
   document.getElementById('btnPickPmImg').onclick=async()=>{
     let u=await pickImg(600,600,0.8);
@@ -562,7 +591,7 @@ function openChat(cid){
   document.getElementById('cvName').textContent=ct.name;
   let ms=gm(cid);ms.forEach(m=>m._read=true);
   document.getElementById('chat-view').classList.add('open');
-  renderMsgs();updateTyping();closeCvMenu();
+  renderMsgs();renderChats();updateTyping();closeCvMenu();
   document.getElementById('msgInp').focus();
 }
 function closeChat(){
@@ -577,15 +606,15 @@ function sendMsg(){
   inp.value='';renderMsgs();renderChats();sv();
   let ct=gc(curChat);
   if(ct){
-    let d=rd(D.settings.replyDelay[0],D.settings.replyDelay[1]);
-    schedReply(curChat,d);updateTyping();
+    let count=rd(D.settings.replyCount[0],D.settings.replyCount[1]);
+    schedReply(curChat,count);updateTyping();
   }
 }
 function trigReply(){
   if(!curChat)return;let ct=gc(curChat);if(!ct)return;
   closeCvMenu();
-  let d=rd(D.settings.replyDelay[0],D.settings.replyDelay[1]);
-  schedReply(curChat,d);updateTyping();
+  let count=rd(D.settings.replyCount[0],D.settings.replyCount[1]);
+  schedReply(curChat,count);updateTyping();
   toast('「'+ct.name+'」正在输入...');
 }
 function trigActiveNow(){
@@ -621,9 +650,9 @@ function showChatInfo(){
       h+=`<div style="display:flex;align-items:center;gap:10px;padding:10px 16px;border-bottom:1px solid #f0f0f0;"><div class="av">${avHtml(m.avatar,36,m.name)}</div><span style="font-size:15px;">${m.name}</span></div>`;
     }
   }
-  h+=`<div class="menu-item" onclick="pickChatBg()"><span>🎨 设置聊天背景</span><span class="arr">›</span></div>
-    <div class="menu-item" onclick="trigReply();closeModal();"><span>💬 让对方马上回复</span><span class="arr">›</span></div>
-    <div class="menu-item" onclick="setTimerMsg()"><span>⏰ 定时主动联系</span><span class="arr">›</span></div>
+  h+=`<div class="menu-item" onclick="pickChatBg()"><span><svg viewBox="0 0 24 24" width="16" height="16" style="vertical-align:-3px;margin-right:6px;"><rect x="2" y="4" width="20" height="16" rx="2" fill="none" stroke="currentColor" stroke-width="2"/><circle cx="8.5" cy="10.5" r="2" fill="none" stroke="currentColor" stroke-width="1.5"/><polyline points="22,16 17,11 10,18" fill="none" stroke="currentColor" stroke-width="1.5"/></svg>设置聊天背景</span><span class="arr">›</span></div>
+    <div class="menu-item" onclick="trigReply();closeModal();"><span><svg viewBox="0 0 24 24" width="16" height="16" style="vertical-align:-3px;margin-right:6px;"><rect x="2" y="2" width="20" height="15" rx="2" fill="none" stroke="currentColor" stroke-width="2"/><line x1="7" y1="18" x2="7" y2="22" stroke="currentColor" stroke-width="2" stroke-linecap="round"/><line x1="17" y1="18" x2="17" y2="22" stroke="currentColor" stroke-width="2" stroke-linecap="round"/></svg>让对方马上回复</span><span class="arr">›</span></div>
+    <div class="menu-item" onclick="setTimerMsg()"><span><svg viewBox="0 0 24 24" width="16" height="16" style="vertical-align:-3px;margin-right:6px;"><circle cx="12" cy="12" r="10" fill="none" stroke="currentColor" stroke-width="2"/><polyline points="12,6 12,12 16,14" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round"/></svg>定时主动联系</span><span class="arr">›</span></div>
   </div>
   <div style="background:var(--card);border-radius:8px;overflow:hidden;margin-bottom:12px;">
     <div class="menu-item" onclick="delCtFromInfo('${curChat}')"><span style="color:var(--danger);">${isGrp?'删除并退出群聊':'删除联系人'}</span></div>
@@ -676,7 +705,7 @@ function pickChatBg(){
   for(let c of colors){
     h+=`<div onclick="setChatBg('${c.v}')" style="width:70px;height:70px;border-radius:10px;cursor:pointer;border:3px solid ${curBg===c.v?'var(--tab-on)':'var(--border)'};background:${c.v||'#fff'};display:flex;align-items:center;justify-content:center;font-size:11px;color:${c.v==='#2c2c2c'?'#fff':'var(--text2)'};">${c.l}</div>`;
   }
-  h+=`</div><div style="margin-top:14px;display:flex;gap:8px;"><button class="btn btn-o btn-s" id="btnBgFile">📷 从相册选取</button><span style="font-size:12px;color:var(--text2);align-self:center;">或</span><div class="fr"><input class="fi" id="bgUrl" placeholder="输入图片URL"><button class="btn btn-p btn-s" onclick="applyBgUrl()">应用</button></div></div>`;
+  h+=`</div><div style="margin-top:14px;display:flex;gap:8px;"><button class="btn btn-o btn-s" id="btnBgFile"><svg viewBox="0 0 24 24" width="14" height="14" style="vertical-align:-2px;margin-right:2px;"><rect x="2" y="4" width="20" height="16" rx="2" fill="none" stroke="currentColor" stroke-width="2"/><circle cx="8.5" cy="10.5" r="2" fill="none" stroke="currentColor" stroke-width="1.5"/><polyline points="22,16 17,11 10,18" fill="none" stroke="currentColor" stroke-width="1.5"/></svg>从相册选取</button><span style="font-size:12px;color:var(--text2);align-self:center;">或</span><div class="fr"><input class="fi" id="bgUrl" placeholder="输入图片URL"><button class="btn btn-p btn-s" onclick="applyBgUrl()">应用</button></div></div>`;
   modal(h,`<button class="btn btn-o" onclick="showChatInfo()">返回</button>`);
   document.getElementById('btnBgFile').onclick=async()=>{
     let u=await pickImg(800,600,0.8);
@@ -814,11 +843,23 @@ function pickImg(mw,mh,q){
     inp.click();
   });
 }
+function pickMultiImg(mw,mh,q){
+  return new Promise(res=>{
+    let inp=document.createElement('input');inp.type='file';inp.accept='image/*';inp.multiple=true;
+    inp.onchange=async e=>{
+      let files=Array.from(e.target.files);if(!files.length){res(null);return;}
+      let results=[];
+      for(let f of files){results.push(await compressImg(f,mw||300,mh||300,q||0.7));}
+      res(results);
+    };
+    inp.click();
+  });
+}
 
 // ===== PROFILE =====
 async function editProfile(){
   let p=D.me;
-  let h=`<div class="fg"><span class="fl">头像</span><div style="display:flex;align-items:center;gap:10px;"><div class="pf-av" id="pfAvPrv" style="width:56px;height:56px;font-size:22px;">${p.avatar?`<img src="${p.avatar}" style="width:100%;height:100%;border-radius:8px;object-fit:cover;">`:'<span>'+p.name[0]+'</span>'}</div><button class="btn btn-o btn-s" id="btnPickAv">从相册选择</button></div></div>
+  let h=`<div class="fg"><span class="fl">头像</span><div style="display:flex;align-items:center;gap:10px;"><div class="pf-av" id="pfAvPrv" style="width:56px;height:56px;font-size:22px;">${p.avatar?`<img src="${p.avatar}" style="width:100%;height:100%;border-radius:8px;object-fit:cover;">`:'<span>'+p.name[0]+'</span>'}</div><button class="btn btn-o btn-s" id="btnPickAv"><svg viewBox="0 0 24 24" width="14" height="14" style="vertical-align:-2px;margin-right:2px;"><rect x="2" y="4" width="20" height="16" rx="2" fill="none" stroke="currentColor" stroke-width="2"/><circle cx="8.5" cy="10.5" r="2" fill="none" stroke="currentColor" stroke-width="1.5"/><polyline points="22,16 17,11 10,18" fill="none" stroke="currentColor" stroke-width="1.5"/></svg>从相册选择</button></div></div>
     <div class="fg"><span class="fl">昵称</span><input class="fi" id="efNm" value="${p.name}"></div>
     <div class="fg"><span class="fl">状态</span><input class="fi" id="efSt" value="${p.status||''}" placeholder="设置状态..."></div>`;
   modal(h,`<button class="btn btn-o" onclick="closeModal()">取消</button><button class="btn btn-p" onclick="svProfile()">保存</button>`);
@@ -869,7 +910,7 @@ function svNewCt(){
 function editCt(cid){
   let ct=gc(cid);if(!ct)return;
   let h=`<div class="fg"><span class="fl">名称</span><input class="fi" id="ecNm" value="${ct.name}"></div>
-    <div class="fg"><span class="fl">头像</span><div style="display:flex;align-items:center;gap:10px;"><div class="av" id="ctAvPrv" style="width:44px;height:44px;font-size:18px;">${avHtml(ct.avatar,44,ct.name)}</div><button class="btn btn-o btn-s" id="btnPickCtAv">更换头像</button></div></div>
+    <div class="fg"><span class="fl">头像</span><div style="display:flex;align-items:center;gap:10px;"><div class="av" id="ctAvPrv" style="width:44px;height:44px;font-size:18px;">${avHtml(ct.avatar,44,ct.name)}</div><button class="btn btn-o btn-s" id="btnPickCtAv"><svg viewBox="0 0 24 24" width="14" height="14" style="vertical-align:-2px;margin-right:2px;"><rect x="2" y="4" width="20" height="16" rx="2" fill="none" stroke="currentColor" stroke-width="2"/><circle cx="8.5" cy="10.5" r="2" fill="none" stroke="currentColor" stroke-width="1.5"/><polyline points="22,16 17,11 10,18" fill="none" stroke="currentColor" stroke-width="1.5"/></svg>更换头像</button></div></div>
     ${ct.isGroup?`<div class="fg"><span class="fl">群成员</span>${ct.members?ct.members.map(m=>`<div style="font-size:13px;padding:4px 0;">${m.name} <span style="color:var(--text2);font-size:11px;">${(m.cardGroups||[]).join(',')||'默认分组'}</span></div>`).join(''):''}</div>`:''}`;
   modal(h,`<button class="btn btn-d btn-s" onclick="delCt('${cid}')">删除</button><button class="btn btn-o" onclick="closeModal()">取消</button><button class="btn btn-p" onclick="svEditCt('${cid}')">保存</button>`);
   document.getElementById('btnPickCtAv').onclick=async()=>{
@@ -909,23 +950,26 @@ function openCards(){
   }
   gHtml+=`<div style="padding:6px;"><button class="btn btn-o btn-s" onclick="addGrp()" style="width:100%;">+ 新建分组</button></div>`;
   let h=`<div class="ce"><div class="ce-l" id="ceGrps">${gHtml}</div><div class="ce-r" id="ceItems"></div></div>`;
-  modal(h,`<button class="btn btn-o btn-s" onclick="importCardsJSON()">📥 导入JSON</button><button class="btn btn-o" onclick="closeModal();sv();renderAll();">完成</button>`);
+  modal(h,`<button class="btn btn-o btn-s" onclick="importCardsJSON()"><svg viewBox="0 0 24 24" width="14" height="14" style="vertical-align:-2px;margin-right:2px;"><path d="M12 21V9M7 15l5-5 5 5" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"/><path d="M5 7V5h14v2" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round"/></svg>导入JSON</button><button class="btn btn-o" onclick="closeModal();sv();renderAll();">完成</button>`);
   renderCards();
 }
 function selGrp(g){curGrp=g;document.querySelectorAll('#ceGrps .gi').forEach(el=>el.classList.toggle('on',el.dataset.g===g));renderCards();}
 function renderCards(){
   let el=document.getElementById('ceItems');if(!el)return;
   let cards=D.cards[curGrp]||[];
+  let searchTerm=(document.getElementById('cardSearch')?.value||'').trim().toLowerCase();
+  let filtered=searchTerm?cards.filter(c=>c.val.toLowerCase().includes(searchTerm)):cards;
   let h=`<div style="margin-bottom:8px;">
+    <input class="card-search" id="cardSearch" type="text" placeholder="🔍 搜索字卡..." value="${searchTerm}" oninput="renderCards()">
     <div class="fl">批量添加（每行一条，自动去重）</div>
     <textarea id="newCardTxt" class="fi" rows="4" placeholder="每行一条&#10;支持文字、emoji&#10;粘贴多行批量导入" style="font-size:13px;resize:vertical;"></textarea>
     <div style="margin-top:4px;display:flex;gap:4px;">
       <button class="btn btn-p btn-s" onclick="addTextCard()">添加文字</button>
-      <button class="btn btn-o btn-s" onclick="addImgCard()">📷 上传图片</button>
+      <button class="btn btn-o btn-s" onclick="addImgCard()"><svg viewBox="0 0 24 24" width="14" height="14" style="vertical-align:-2px;margin-right:2px;"><rect x="2" y="4" width="20" height="16" rx="2" fill="none" stroke="currentColor" stroke-width="2"/><circle cx="8.5" cy="10.5" r="2" fill="none" stroke="currentColor" stroke-width="1.5"/><polyline points="22,16 17,11 10,18" fill="none" stroke="currentColor" stroke-width="1.5"/></svg>上传图片(可多选)</button>
     </div></div>
-    <div style="margin-bottom:6px;display:flex;gap:4px;">${curGrp!=='状态'?`<button class="btn btn-o btn-s" onclick="renameGrp()">✏️ 重命名</button><button class="btn btn-d btn-s" onclick="delGrp()">🗑 删除</button>`:'<span style="font-size:11px;color:var(--text2);">状态分组不可删除</span>'}</div>
-    <div style="font-size:11px;color:var(--text2);margin-bottom:6px;">共 ${cards.length} 条 · 点击卡片删除</div>`;
-  for(let c of cards){
+    <div style="margin-bottom:6px;display:flex;gap:4px;">${curGrp!=='状态'?`<button class="btn btn-o btn-s" onclick="renameGrp()"><svg viewBox="0 0 24 24" width="12" height="12" style="vertical-align:-1px;margin-right:2px;"><path d="M17 3a2.828 2.828 0 014 4L7.5 20.5 2 22l1.5-5.5L17 3z" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"/></svg>重命名</button><button class="btn btn-d btn-s" onclick="delGrp()"><svg viewBox="0 0 24 24" width="12" height="12" style="vertical-align:-1px;margin-right:2px;"><polyline points="3 6 5 6 21 6" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round"/><path d="M19 6l-1 14a2 2 0 01-2 2H8a2 2 0 01-2-2L5 6M10 11v6M14 11v6" fill="none" stroke="currentColor" stroke-width="1.5" stroke-linecap="round"/></svg>删除</button>`:'<span style="font-size:11px;color:var(--text2);">状态分组不可删除</span>'}</div>
+    <div style="font-size:11px;color:var(--text2);margin-bottom:6px;">共 ${cards.length} 条${searchTerm?' · 筛选出 '+filtered.length+' 条':''} · 点击卡片删除</div>`;
+  for(let c of filtered){
     if(c.type==='img')h+=`<span class="card-tag" onclick="rmCard('${curGrp.replace(/'/g,"\\'")}','${c.val.replace(/'/g,"\\'")}')"><img src="${c.val}"> <span class=x>×</span></span>`;
     else h+=`<span class="card-tag" onclick="rmCard('${curGrp.replace(/'/g,"\\'")}','${c.val.replace(/'/g,"\\'").replace(/"/g,'&quot;')}')">${c.val} <span class=x>×</span></span>`;
   }
@@ -947,9 +991,10 @@ function addTextCard(){
   inp.value='';
 }
 async function addImgCard(){
-  let u=await pickImg(300,300,0.7);if(!u)return;
+  let urls=await pickMultiImg(300,300,0.7);if(!urls||!urls.length)return;
   if(!D.cards[curGrp])D.cards[curGrp]=[];
-  D.cards[curGrp].push({type:'img',val:u});sv();renderCards();
+  for(let u of urls){D.cards[curGrp].push({type:'img',val:u});}
+  sv();renderCards();toast(`已添加 ${urls.length} 张图片`);
 }
 function rmCard(g,v){if(!D.cards[g])return;D.cards[g]=D.cards[g].filter(c=>c.val!==v);sv();renderCards();}
 function addGrp(){
@@ -1032,7 +1077,7 @@ function delGrp(){
 
 // ===== LETTERS =====
 function openLetters(){
-  let h=`<div style="margin-bottom:10px;"><button class="btn btn-p btn-s" onclick="writeLetter()">✍️ 写一封信</button></div>`;
+  let h=`<div style="margin-bottom:10px;"><button class="btn btn-p btn-s" onclick="writeLetter()"><svg viewBox="0 0 24 24" width="14" height="14" style="vertical-align:-2px;margin-right:2px;"><path d="M17 3a2.828 2.828 0 014 4L7.5 20.5 2 22l1.5-5.5L17 3z" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"/></svg>写一封信</button></div>`;
   if(!D.letters.length)h+='<div class=empty>暂无书信</div>';
   else{for(let l of D.letters){
     h+=`<div style="background:#fafafa;border:1px solid var(--border);border-radius:8px;padding:12px;margin-bottom:8px;">
@@ -1073,8 +1118,7 @@ function viewLetterReply(lid){
 // ===== SETTINGS =====
 function openSettings(){
   let s=D.settings;
-  let h=`<div class="fg"><span class="fl">回复延迟（秒）</span><div class="fr"><input class="fi" id="sDlyMin" value="${s.replyDelay[0]}" type="number" min="1" style="width:70px;"> - <input class="fi" id="sDlyMax" value="${s.replyDelay[1]}" type="number" min="1" style="width:70px;"></div></div>
-    <div class="fg"><span class="fl">回复条数</span><div class="fr"><input class="fi" id="sCntMin" value="${s.replyCount[0]}" type="number" min="1" max="10" style="width:70px;"> - <input class="fi" id="sCntMax" value="${s.replyCount[1]}" type="number" min="1" max="10" style="width:70px;"></div></div>
+  let h=`<div class="fg"><span class="fl">回复条数</span><div class="fr"><input class="fi" id="sCntMin" value="${s.replyCount[0]}" type="number" min="1" max="10" style="width:70px;"> - <input class="fi" id="sCntMax" value="${s.replyCount[1]}" type="number" min="1" max="10" style="width:70px;"></div></div>
     <div class="fg"><span class="fl">对方的主动联系延时（分钟）</span><input class="fi" id="sActive" value="${s.activeDelay||5}" type="number" min="1" max="120"></div>
     <div class="fg"><span class="fl">通话接听率</span><input class="fi" id="sCall" value="${s.callAnswer}" type="number" min="0" max="1" step="0.1"></div>
     <div class="fg"><span class="fl">主动来电概率/小时</span><input class="fi" id="sCallA" value="${s.callActiveChance}" type="number" min="0" max="1" step="0.01"></div>
@@ -1085,7 +1129,6 @@ function openSettings(){
   modal(h,`<button class="btn btn-o" onclick="closeModal()">取消</button><button class="btn btn-p" onclick="svSettings()">保存</button>`);
 }
 function svSettings(){
-  D.settings.replyDelay=[parseInt(document.getElementById('sDlyMin').value)||3,parseInt(document.getElementById('sDlyMax').value)||180];
   D.settings.replyCount=[parseInt(document.getElementById('sCntMin').value)||1,parseInt(document.getElementById('sCntMax').value)||5];
   D.settings.activeDelay=parseInt(document.getElementById('sActive').value)||5;
   D.settings.callAnswer=parseFloat(document.getElementById('sCall').value)||0.5;
@@ -1186,7 +1229,7 @@ function init(){
   ld();
   if(!D.cards||!Object.keys(D.cards).length)D.cards={'日常':[{type:'text',val:'你好呀~ 🌞'},{type:'text',val:'在干嘛呢？'},{type:'text',val:'今天天气真好 ☀️'},{type:'text',val:'哈哈哈哈哈 😂'},{type:'text',val:'真的假的！'},{type:'text',val:'早点休息哦 🌙'},{type:'text',val:'记得吃饭！'},{type:'text',val:'😊'},{type:'text',val:'😂'},{type:'text',val:'🥰'},{type:'text',val:'[贴贴]'},{type:'text',val:'[暗中观察]'}],'表情包':[],'状态':[{type:'text',val:'在线'},{type:'text',val:'摸鱼中 🐟'},{type:'text',val:'忙碌中...'},{type:'text',val:'睡觉中 😴'},{type:'text',val:'元气满满 ✨'},{type:'text',val:'搬砖中 🧱'}]};
   if(!D.contacts||!D.contacts.length){let allGs=Object.keys(D.cards).filter(g=>g!=='状态');D.contacts=[{id:'c1',name:'小明',avatar:'',cardGroups:allGs},{id:'c2',name:'小红',avatar:'',cardGroups:allGs},{id:'c3',name:'阿杰',avatar:'',cardGroups:allGs}];}
-  if(!D.settings)D.settings={replyDelay:[3,180],replyCount:[1,5],activeDelay:5,callAnswer:0.5,callActiveChance:0.01,statusInterval:5,statusProb:0.5,letterDays:[1,7],letterReplies:[5,30],momentsLike:0.6,momentsComment:0.3};
+  if(!D.settings)D.settings={replyCount:[1,5],activeDelay:5,callAnswer:0.5,callActiveChance:0.01,statusInterval:5,statusProb:0.5,letterDays:[1,7],letterReplies:[5,30],momentsLike:0.6,momentsComment:0.3};
   if(!D.moments)D.moments=[];
   if(!D.letters)D.letters=[];
   if(!D.pending)D.pending={};
