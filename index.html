@@ -1,3 +1,4 @@
+<!DOCTYPE html>
 <html lang="zh-CN">
 <head>
 <meta charset="UTF-8">
@@ -7,20 +8,21 @@
 <link rel="stylesheet" href="//at.alicdn.com/t/c/font_XXXXXXX.css">
 <style>
 :root {
-  --bg: #F8F3DD;
+  --bg: #FFFEF7;
   --bar: #F7D4AD;
-  --card: #F8F3DD;
+  --card: #FFFEF7;
   --text: #4a3728;
   --text2: #8b7a6a;
-  --border: #e8dcc8;
+  --border: #ede4d0;
   --tab-on: #c89460;
   --tab-off: #b8a080;
   --link: #8b6914;
   --danger: #c0392b;
+  --received: #f5f0e8;
 }
 .icof { width:1em; height:1em; vertical-align:-.15em; fill:currentColor; overflow:hidden; }
 * { margin:0; padding:0; box-sizing:border-box; }
-html,body { height:100%; overflow:hidden; background:#F8F3DD; }
+html,body { height:100%; overflow:hidden; background:#FFFEF7; }
 body {
   font-family:-apple-system,BlinkMacSystemFont,"PingFang SC","Microsoft YaHei",sans-serif;
   color:var(--text); -webkit-tap-highlight-color:transparent;
@@ -45,6 +47,26 @@ body {
   .page { padding-bottom:0 !important; }
   .cv-hd .back { display:none; }
   .input-bar { padding-bottom:8px !important; }
+  .modal { max-width:560px; border-radius:14px; }
+  .modal-bg { align-items:center; }
+  .msg-row { max-width:60%; }
+  .ce { height:50vh; }
+  .letter-article-body { padding:24px 28px; font-size:16px; line-height:2.2; }
+}
+@media(min-width:1024px){
+  #app .page { max-width:340px; }
+  .msg-row { max-width:50%; }
+  .modal { max-width:620px; }
+  .letter-article-body { max-width:580px; margin:0 auto; }
+}
+@media(max-width:767px){
+  .msg-row { max-width:80%; }
+  .msg-bbl { font-size:15px; padding:8px 10px; }
+  .modal { border-radius:12px 12px 0 0; max-height:90vh; }
+  .ce { height:60vh; flex-direction:column; }
+  .ce-l { width:100%; height:auto; max-height:120px; border-right:none; border-bottom:1px solid var(--border); display:flex; flex-wrap:wrap; overflow-x:auto; }
+  .ce-l .gi { flex-shrink:0; white-space:nowrap; }
+  .ce-r { min-height:200px; }
 }
 .hd { height:44px; display:flex; align-items:center; justify-content:center; background:var(--bg); font-size:17px; font-weight:600; flex-shrink:0; padding:0 16px; position:relative; border-bottom:1px solid var(--border); }
 .hd .hdr { position:absolute; right:10px; top:50%; transform:translateY(-50%); background:none; border:none; font-size:18px; color:var(--text); cursor:pointer; padding:4px 8px; }
@@ -183,6 +205,15 @@ body {
 .icall { position:fixed; top:16px; left:50%; transform:translateX(-50%); z-index:250; background:#fff; border-radius:12px; padding:14px 18px; box-shadow:0 4px 20px rgba(0,0,0,.15); display:none; align-items:center; gap:10px; min-width:260px; }
 .icall.show { display:flex; }
 .icall .act { display:flex; gap:8px; margin-left:auto; }
+.emoji-btn { background:none; border:none; font-size:22px; cursor:pointer; padding:4px 6px; flex-shrink:0; border-radius:6px; }
+.emoji-btn:active { background:#ecd4a0; }
+.emoji-picker { position:absolute; bottom:56px; left:10px; right:10px; background:var(--card); border-radius:10px; box-shadow:0 -2px 16px rgba(0,0,0,.12); z-index:30; max-height:220px; display:flex; flex-direction:column; overflow:hidden; }
+.emoji-picker-hd { display:flex; align-items:center; justify-content:space-between; padding:8px 12px; border-bottom:1px solid var(--border); font-size:13px; font-weight:600; flex-shrink:0; }
+.emoji-picker-body { flex:1; overflow-y:auto; padding:8px; display:flex; flex-wrap:wrap; gap:6px; align-content:flex-start; }
+.emoji-close { background:none; border:none; font-size:16px; color:var(--text2); cursor:pointer; }
+.emoji-item { font-size:28px; padding:4px; cursor:pointer; border-radius:6px; line-height:1; }
+.emoji-item:active { background:#ecd4a0; }
+.emoji-item img { width:60px; height:60px; object-fit:cover; border-radius:4px; }
 #toast { position:fixed; top:60px; left:50%; transform:translateX(-50%); background:rgba(0,0,0,.75); color:#fff; padding:8px 18px; border-radius:16px; font-size:13px; z-index:300; opacity:0; transition:opacity .2s; pointer-events:none; }
 #toast.show { opacity:1; }
 /* Call float bubble */
@@ -197,6 +228,24 @@ body {
 #callFloat .dot { width:8px; height:8px; border-radius:50%; background:#fff; animation:blink 1s infinite; }
 @keyframes blink { 50%{opacity:.3} }
 .empty { text-align:center; padding:40px 16px; color:var(--text2); font-size:14px; }
+/* Letter article */
+.letter-article { background:var(--card); border-radius:12px; overflow:hidden; }
+.letter-article-hd { display:flex; align-items:center; gap:12px; padding:16px; border-bottom:1px solid var(--border); }
+.letter-article-av { flex-shrink:0; }
+.letter-article-from { font-weight:600; font-size:16px; }
+.letter-article-date { margin-left:auto; font-size:12px; color:var(--text2); }
+.letter-article-body { padding:20px 18px; font-size:15px; line-height:2; text-indent:2em; color:var(--text); letter-spacing:.5px; white-space:pre-wrap; word-break:break-word; }
+.letter-article-body p { margin-bottom:12px; }
+.letter-article-orig { margin:0 16px 16px; padding:10px 14px; background:var(--received); border-radius:8px; font-size:12px; color:var(--text2); border-left:3px solid var(--tab-on); }
+.letter-article-orig span { font-weight:600; color:var(--text); }
+.letter-article-imgs { padding:0 18px 16px; display:flex; flex-wrap:wrap; gap:8px; }
+.letter-article-img { max-width:120px; max-height:120px; border-radius:6px; cursor:pointer; object-fit:cover; transition:transform .2s; }
+.letter-article-img.zoom { position:fixed; top:50%; left:50%; transform:translate(-50%,-50%); max-width:90vw; max-height:90vh; z-index:300; border-radius:8px; box-shadow:0 8px 40px rgba(0,0,0,.3); }
+@media(max-width:480px){
+  .letter-article-body { padding:16px 14px; font-size:14px; text-indent:2em; }
+  .letter-article-hd { padding:12px; }
+  .letter-article-imgs { padding:0 14px 12px; }
+}
 ::-webkit-scrollbar { width:0; }
 /* Checkbox list */
 .cb-list { max-height:300px; overflow-y:auto; }
@@ -258,8 +307,17 @@ body {
     </div>
     <div class="msgs" id="msgs"></div>
     <div class="input-bar">
+      <button class="emoji-btn" id="btnEmoji" title="表情包">😊</button>
       <textarea id="msgInp" rows="1" placeholder=""></textarea>
       <button class="snd" id="btnSnd">发送</button>
+    </div>
+    <!-- 表情包选择器 -->
+    <div class="emoji-picker" id="emojiPicker" style="display:none;">
+      <div class="emoji-picker-hd">
+        <span>表情包</span>
+        <button class="emoji-close" id="btnEmojiClose">✕</button>
+      </div>
+      <div class="emoji-picker-body" id="emojiPickerBody"></div>
     </div>
   </div>
 
@@ -311,7 +369,7 @@ let D={
   pending:{},
   pendingActive:{},
   bg:{},  // chat backgrounds per contact
-  settings:{replyCount:[1,5],callAnswer:0.5,callActiveChance:0.01,statusInterval:5,statusProb:0.5,letterDays:[1,7],letterReplies:[5,30],momentsLike:0.6,momentsComment:0.3},
+  settings:{replyCount:[1,5],callAnswer:0.5,callActiveChance:0.01,statusInterval:5,statusProb:0,letterDays:[1,3],letterReplies:[5,30],momentsLike:0.6,momentsComment:0.3},
   _lastStatus:0,_lastMoments:''
 };
 let curTab='chats',curChat=null,curGrp=null;
@@ -353,22 +411,24 @@ function genText(groups){
 function genMsgs(contact,count){
   let msgs=[];
   let allNonStatus=Object.keys(D.cards).filter(g=>g!=='状态');
-  // Validate cardGroups — filter to only those that actually exist in D.cards
   function validGroups(cgs){
     if(!cgs||!cgs.length)return allNonStatus;
     let valid=cgs.filter(g=>D.cards[g]&&D.cards[g].length);
     return valid.length?valid:allNonStatus;
   }
   let groups=contact.isGroup?allNonStatus:validGroups(contact.cardGroups);
+  // 对面随机发表情包：30%概率从表情包组选取
+  let stickerGroups=D.cards['表情包']&&D.cards['表情包'].length?['表情包']:null;
   let n=Math.min(count,10);
   for(let i=0;i<n;i++){
     let from=contact.name,av=contact.avatar||'',cg=groups;
     if(contact.isGroup&&contact.members&&contact.members.length){
       let m=pr(contact.members);from=m.name;av=m.avatar||'';cg=validGroups(m.cardGroups);
     }
-    let cards=allCards(cg);
+    let useSticker=stickerGroups&&rf()<0.3;
+    let cards=allCards(useSticker?stickerGroups:cg);
     let card=pr(cards);
-    msgs.push({id:uid(),from,fromAvatar:av,text:card.val,time:Date.now(),type:card.type||'text',img:card.type==='img'?card.val:null});
+    msgs.push({id:uid(),from,fromAvatar:av,text:card.type==='img'?'[图片]':card.val,time:Date.now(),type:card.type||'text',img:card.type==='img'?card.val:null});
   }
   return msgs;
 }
@@ -421,7 +481,7 @@ function checkSim(){
   let si=(D.settings.statusInterval||5)*3600000;
   if(now-(D._lastStatus||now)>=si){
     D._lastStatus=now;
-    if(rf()<(D.settings.statusProb||0.5)){
+    let sp=D.settings.statusProb;if(sp===undefined)sp=0;if(rf()<sp){
       let sc=D.cards['状态']||[];
       for(let ct of D.contacts){if(sc.length)ct._status=pr(sc).val;}
       ch=true;
@@ -494,6 +554,7 @@ function renderMoments(){
       <div class="m-acts">
         <span onclick="likeMoment('${p._id}')">❤️ ${lks.length||'赞'}</span>
         <span onclick="commentMoment('${p._id}')">💬 ${cms.length||'评论'}</span>
+        ${isMe?`<span onclick="editMoment('${p._id}')">✎ 编辑</span><span onclick="deleteMoment('${p._id}')">🗑 删除</span>`:''}
       </div>
       ${cms.length?`<div class="m-cmts">${cms.map(c=>`<div><span class=n>${c.name}</span>: ${c.text}</div>`).join('')}</div>`:''}
     </div>`;
@@ -518,6 +579,18 @@ function commentMoment(id){
   if(!p._comments)p._comments=[];
   p._comments.push({name:D.me.name,text:txt.trim()});
   sv();renderMoments();toast('已评论');
+}
+function editMoment(id){
+  let p=findMoment(id);if(!p)return;
+  let txt=prompt('编辑动态：',p.content);
+  if(!txt||!txt.trim())return;
+  p.content=txt.trim();sv();renderMoments();toast('已更新');
+}
+function deleteMoment(id){
+  let p=findMoment(id);if(!p)return;
+  if(!confirm('确定删除这条动态吗？'))return;
+  D.moments=D.moments.filter(x=>x._id!==id);
+  sv();renderMoments();toast('已删除');
 }
 
 function postMoment(){
@@ -591,24 +664,61 @@ function openChat(cid){
   document.getElementById('cvName').textContent=ct.name;
   let ms=gm(cid);ms.forEach(m=>m._read=true);
   document.getElementById('chat-view').classList.add('open');
-  renderMsgs();renderChats();updateTyping();closeCvMenu();
+  renderMsgs();renderChats();updateTyping();closeCvMenu();closeEmojiPicker();
   document.getElementById('msgInp').focus();
 }
 function closeChat(){
   document.getElementById('chat-view').classList.remove('open');
-  curChat=null;closeCvMenu();renderChats();sv();
+  curChat=null;closeCvMenu();closeEmojiPicker();renderChats();sv();
 }
 function sendMsg(){
   if(!curChat)return;
   let inp=document.getElementById('msgInp'),txt=inp.value.trim();
   if(!txt)return;
-  gm(curChat).push({id:uid(),from:D.me.name,text:txt,time:Date.now(),type:'text'});
+  gm(curChat).push({id:uid(),from:D.me.name,text:txt,time:Date.now(),type:'text',_read:true});
   inp.value='';renderMsgs();renderChats();sv();
   let ct=gc(curChat);
   if(ct){
     let count=rd(D.settings.replyCount[0],D.settings.replyCount[1]);
     schedReply(curChat,count);updateTyping();
   }
+}
+function sendSticker(val,type,img){
+  if(!curChat)return;
+  gm(curChat).push({id:uid(),from:D.me.name,text:val,time:Date.now(),type:type||'text',img:img||null,_read:true});
+  closeEmojiPicker();renderMsgs();renderChats();sv();
+  let ct=gc(curChat);
+  if(ct){
+    let count=rd(D.settings.replyCount[0],D.settings.replyCount[1]);
+    schedReply(curChat,count);updateTyping();
+  }
+}
+function toggleEmojiPicker(){
+  let p=document.getElementById('emojiPicker');
+  if(p.style.display==='none'||!p.style.display){
+    let cards=D.cards['表情包']||[];
+    if(!cards.length){
+      // fallback: collect all img cards from all groups
+      let allImg=[];
+      for(let[g,cs]of Object.entries(D.cards)){
+        for(let c of cs){if(c.type==='img')allImg.push(c);}
+      }
+      if(!allImg.length){toast('表情包为空，请先在字卡库中添加');return;}
+      cards=allImg;
+    }
+    let h='';
+    for(let c of cards){
+      if(c.type==='img')h+=`<div class="emoji-item" onclick="sendSticker('[图片]','img','${c.val.replace(/'/g,"\\'")}')"><img src="${c.val}"></div>`;
+      else h+=`<div class="emoji-item" onclick="sendSticker('${c.val.replace(/'/g,"\\'")}','text',null)">${c.val}</div>`;
+    }
+    document.getElementById('emojiPickerBody').innerHTML=h;
+    p.style.display='flex';
+  }else{
+    closeEmojiPicker();
+  }
+}
+function closeEmojiPicker(){
+  document.getElementById('emojiPicker').style.display='none';
 }
 function trigReply(){
   if(!curChat)return;let ct=gc(curChat);if(!ct)return;
@@ -1082,9 +1192,9 @@ function openLetters(){
   else{for(let l of D.letters){
     h+=`<div style="background:#fafafa;border:1px solid var(--border);border-radius:8px;padding:12px;margin-bottom:8px;">
       <div style="font-weight:600;">致「${l.toName}」</div><div style="font-size:13px;color:var(--text2);margin:4px 0;">${l.content.slice(0,40)}...</div>
-      <div style="font-size:11px;color:var(--text2);">${l.delivered?'已送达 '+fmtTime(l.deliverAt):'预计送达 '+fmtTime(l.deliverAt)}</div>
+      <div style="font-size:11px;color:var(--text2);">${l.delivered?'已送达 '+fmtTime(l.deliverAt):'预计一到三天后送达'}</div>
       <span style="font-size:11px;padding:2px 8px;border-radius:10px;${l.delivered?'background:#d4edda;color:#155724':'background:#fff3cd;color:#856404'}">${l.delivered?'已送达':'寄送中'}</span>
-      ${l.delivered&&l.replies?`<div style="margin-top:6px;font-size:12px;color:var(--link);cursor:pointer;" onclick="viewLetterReply('${l.id}')">💌 查看回信 (${l.replies.length}条)</div>`:''}</div>`;}
+      ${l.delivered&&l.replies?`<div style="margin-top:6px;font-size:12px;color:var(--link);cursor:pointer;" onclick="viewLetterReply('${l.id}')">📄 查看回信文章</div>`:''}</div>`;}
   }
   modal(h,`<button class="btn btn-o" onclick="closeModal()">关闭</button>`);
 }
@@ -1096,7 +1206,7 @@ function writeLetter(){
   let def=lc.length?pr(lc).val:'最近还好吗？';
   let h=`<div class="fg"><span class="fl">收信人</span><select class="fi" id="ltTo">${opts}</select></div>
     <div class="fg"><span class="fl">内容</span><textarea class="fi" id="ltCt" rows="4">${def}</textarea></div>
-    <div style="font-size:11px;color:var(--text2);">📮 ${D.settings.letterDays[0]}-${D.settings.letterDays[1]}天内送达</div>`;
+    <div style="font-size:11px;color:var(--text2);">📮 一到三天内送达</div>`;
   modal(h,`<button class="btn btn-o" onclick="openLetters()">取消</button><button class="btn btn-p" onclick="svLetter()">寄出</button>`);
 }
 function svLetter(){
@@ -1105,13 +1215,29 @@ function svLetter(){
   let con=gc(toId);if(!con)return;
   let dd=rd(D.settings.letterDays[0],D.settings.letterDays[1]);
   D.letters.push({id:uid(),toId,toName:con.name,content:ct,sentAt:Date.now(),deliverAt:Date.now()+dd*86400000,delivered:false,replies:[]});
-  sv();closeModal();toast('✉️ 已寄出，预计'+dd+'天后送达');
+  sv();closeModal();toast('✉️ 已寄出，一到三天后送达');
 }
 function viewLetterReply(lid){
   let l=D.letters.find(x=>x.id===lid);if(!l||!l.replies)return;
-  let h=`<div style="font-weight:600;margin-bottom:8px;">💌 「${l.toName}」的回信</div>`;
-  for(let r of l.replies)h+=`<div style="background:#f7f7f7;padding:8px 10px;border-radius:6px;margin-bottom:6px;font-size:13px;"><span style="color:var(--link);font-weight:600;">${r.from}</span>: ${r.text}</div>`;
-  h+=`<div style="font-size:11px;color:var(--text2);margin-top:8px;">原件：${l.content}</div>`;
+  let paragraphs=[],imgs=[];
+  for(let r of l.replies){
+    if(r.type==='img'&&r.img){imgs.push(r.img);}
+    else if(r.text&&r.text!=='[图片]'){paragraphs.push(r.text);}
+  }
+  let body=paragraphs.length?paragraphs.join('\n\n') : '（图片）';
+  let imgHtml=imgs.length?`<div class="letter-article-imgs">${imgs.map(u=>`<img src="${u}" class="letter-article-img" onclick="this.classList.toggle('zoom')">`).join('')}</div>`:'';
+  let h=`<div class="letter-article">
+    <div class="letter-article-hd">
+      <div class="letter-article-av">${avHtml('',48,l.toName)}</div>
+      <div>
+        <div class="letter-article-from">${l.toName}</div>
+        <div style="font-size:11px;color:var(--text2);">${fmtTime(l.deliverAt)}</div>
+      </div>
+    </div>
+    <div class="letter-article-body">${body}</div>
+    ${imgHtml}
+    <div class="letter-article-orig"><span>原件：</span>${l.content}</div>
+  </div>`;
   modal(h,`<button class="btn btn-o" onclick="openLetters()">返回</button>`);
 }
 
@@ -1161,18 +1287,24 @@ function importData(){
 // ===== MOMENTS AUTO (contacts like/reply within 24h) =====
 function momentsCheck(){
   let now=Date.now();
-  // Contacts interact with recent posts (within 24h)
+  let personalContacts=D.contacts.filter(c=>!c.isGroup);
+  if(!personalContacts.length)return;
   for(let p of D.moments){
     if(!p._createdAt)continue;
     let age=now-p._createdAt;
-    if(age>86400000)continue; // Only within 24 hours
-    if(rf()<D.settings.momentsLike*0.3){ // Spread out over the day
-      let l=pr(D.contacts);if(!p._likes)p._likes=[];
+    if(age>86400000)continue;
+    // Likes: 1-5 per post within 24h (仅个人，禁止群聊)
+    if(!p._maxLikes)p._maxLikes=rd(1,5);
+    if(!p._likes)p._likes=[];
+    if(p._likes.length<p._maxLikes&&rf()<0.3){
+      let l=pr(personalContacts);
       if(!p._likes.includes(l.name))p._likes.push(l.name);
     }
-    if(rf()<D.settings.momentsComment*0.3){
-      let cm=pr(D.contacts),cmCards=allCards(Object.keys(D.cards).filter(g=>g!=='状态'));
-      if(!p._comments)p._comments=[];
+    // Comments: 1-3 per post within 24h (仅个人，禁止群聊)
+    if(!p._maxComments)p._maxComments=rd(1,3);
+    if(!p._comments)p._comments=[];
+    if(p._comments.length<p._maxComments&&rf()<0.3){
+      let cm=pr(personalContacts),cmCards=allCards(Object.keys(D.cards).filter(g=>g!=='状态'));
       p._comments.push({name:cm.name,text:cmCards.length?pr(cmCards).val:'👍'});
     }
   }
@@ -1194,6 +1326,7 @@ function switchTab(t){
   if(t==='contacts')renderCts();
   if(t==='discover'){momentsCheck();renderMoments();}
   if(t==='me')renderMe();
+  closeEmojiPicker();
   if(curChat&&t!=='chats'&&window.innerWidth<768)closeChat();
 }
 function renderAll(){renderChats();renderCts();renderMoments();renderMe();}
@@ -1207,6 +1340,8 @@ function bind(){
   document.getElementById('btnCvCall').addEventListener('click',()=>{if(curChat)startCall(curChat);});
   document.getElementById('btnCvMenu').addEventListener('click',toggleCvMenu);
   document.getElementById('btnSnd').addEventListener('click',sendMsg);
+  document.getElementById('btnEmoji').addEventListener('click',toggleEmojiPicker);
+  document.getElementById('btnEmojiClose').addEventListener('click',closeEmojiPicker);
   document.getElementById('msgInp').addEventListener('keydown',e=>{if(e.key==='Enter'&&!e.shiftKey){e.preventDefault();sendMsg();}});
   document.getElementById('pfCard').addEventListener('click',editProfile);
   document.getElementById('btnCards').addEventListener('click',openCards);
@@ -1216,7 +1351,7 @@ function bind(){
   document.getElementById('btnImport').addEventListener('click',importData);
   document.getElementById('btnPostMoment').addEventListener('click',postMoment);
   // Close menu on outside click
-  document.addEventListener('click',e=>{if(!e.target.closest('#cvMenu')&&!e.target.closest('#btnCvMenu'))closeCvMenu();});
+  document.addEventListener('click',e=>{if(!e.target.closest('#cvMenu')&&!e.target.closest('#btnCvMenu'))closeCvMenu();if(!e.target.closest('#emojiPicker')&&!e.target.closest('#btnEmoji'))closeEmojiPicker();});
   // Call minimize button (delegated)
   document.getElementById('call-v').addEventListener('click',e=>{if(e.target.id==='btnMinCall')minimizeCall();});
   document.getElementById('chatList').addEventListener('contextmenu',e=>{
@@ -1227,9 +1362,9 @@ function bind(){
 // ===== INIT =====
 function init(){
   ld();
-  if(!D.cards||!Object.keys(D.cards).length)D.cards={'日常':[{type:'text',val:'你好呀~ 🌞'},{type:'text',val:'在干嘛呢？'},{type:'text',val:'今天天气真好 ☀️'},{type:'text',val:'哈哈哈哈哈 😂'},{type:'text',val:'真的假的！'},{type:'text',val:'早点休息哦 🌙'},{type:'text',val:'记得吃饭！'},{type:'text',val:'😊'},{type:'text',val:'😂'},{type:'text',val:'🥰'},{type:'text',val:'[贴贴]'},{type:'text',val:'[暗中观察]'}],'表情包':[],'状态':[{type:'text',val:'在线'},{type:'text',val:'摸鱼中 🐟'},{type:'text',val:'忙碌中...'},{type:'text',val:'睡觉中 😴'},{type:'text',val:'元气满满 ✨'},{type:'text',val:'搬砖中 🧱'}]};
+  if(!D.cards||!Object.keys(D.cards).length)D.cards={'日常':[{type:'text',val:'你好呀~ 🌞'},{type:'text',val:'在干嘛呢？'},{type:'text',val:'今天天气真好 ☀️'},{type:'text',val:'哈哈哈哈哈 😂'},{type:'text',val:'真的假的！'},{type:'text',val:'早点休息哦 🌙'},{type:'text',val:'记得吃饭！'},{type:'text',val:'😊'},{type:'text',val:'😂'},{type:'text',val:'🥰'},{type:'text',val:'[贴贴]'},{type:'text',val:'[暗中观察]'}],'表情包':[{type:'text',val:'😂'},{type:'text',val:'😊'},{type:'text',val:'🥰'},{type:'text',val:'😭'},{type:'text',val:'🤣'},{type:'text',val:'😡'},{type:'text',val:'👍'},{type:'text',val:'❤️'},{type:'text',val:'[贴贴]'},{type:'text',val:'[暗中观察]'},{type:'text',val:'[裂开]'},{type:'text',val:'[狗头]'}],'状态':[{type:'text',val:'在线'},{type:'text',val:'摸鱼中 🐟'},{type:'text',val:'忙碌中...'},{type:'text',val:'睡觉中 😴'},{type:'text',val:'元气满满 ✨'},{type:'text',val:'搬砖中 🧱'}]};
   if(!D.contacts||!D.contacts.length){let allGs=Object.keys(D.cards).filter(g=>g!=='状态');D.contacts=[{id:'c1',name:'小明',avatar:'',cardGroups:allGs},{id:'c2',name:'小红',avatar:'',cardGroups:allGs},{id:'c3',name:'阿杰',avatar:'',cardGroups:allGs}];}
-  if(!D.settings)D.settings={replyCount:[1,5],activeDelay:5,callAnswer:0.5,callActiveChance:0.01,statusInterval:5,statusProb:0.5,letterDays:[1,7],letterReplies:[5,30],momentsLike:0.6,momentsComment:0.3};
+  if(!D.settings)D.settings={replyCount:[1,5],activeDelay:5,callAnswer:0.5,callActiveChance:0.01,statusInterval:5,statusProb:0,letterDays:[1,3],letterReplies:[5,30],momentsLike:0.6,momentsComment:0.3};
   if(!D.moments)D.moments=[];
   if(!D.letters)D.letters=[];
   if(!D.pending)D.pending={};
