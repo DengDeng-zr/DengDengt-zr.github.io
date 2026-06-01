@@ -253,6 +253,9 @@ body {
 .cb-item input { width:18px; height:18px; accent-color:var(--tab-on); }
 .card-search { width:100%; padding:6px 10px; border:1px solid var(--border); border-radius:6px; font-size:13px; background:var(--card); font-family:inherit; outline:none; margin-bottom:8px; }
 .card-search:focus { border-color:var(--tab-on); }
+.ce-back-top { position:sticky; bottom:8px; float:right; width:36px; height:36px; border-radius:50%; background:var(--tab-on); color:#fff; border:none; font-size:18px; cursor:pointer; display:none; align-items:center; justify-content:center; box-shadow:0 2px 8px rgba(0,0,0,.2); z-index:10; margin-right:4px; }
+.ce-back-top.show { display:flex; }
+.ce-r { position:relative; }
 </style>
 </head>
 <body>
@@ -403,8 +406,12 @@ function allCards(groups){
 }
 
 function genText(groups){
-  let cards=allCards(groups),count=rd(1,Math.min(3,cards.length)),parts=[];
-  for(let i=0;i<count;i++)parts.push(pr(cards).val);
+  let cards=allCards(groups);
+  // Emoji分组可以和其他任意字卡组合：将Emoji混入候选池
+  let emojiCards=D.cards['Emoji']||[];
+  let pool=[...cards,...emojiCards];
+  let count=rd(1,Math.min(3,pool.length)),parts=[];
+  for(let i=0;i<count;i++)parts.push(pr(pool).val);
   return parts.join(' ');
 }
 
@@ -427,7 +434,10 @@ function genMsgs(contact,count){
     }
     let useSticker=stickerGroups&&rf()<0.3;
     let cards=allCards(useSticker?stickerGroups:cg);
-    let card=pr(cards);
+    // Emoji分组和其他字卡组合：混入候选池一起随机选取
+    let emojiCards=D.cards['Emoji']||[];
+    let pool=[...cards,...emojiCards];
+    let card=pr(pool);
     msgs.push({id:uid(),from,fromAvatar:av,text:card.type==='img'?'[图片]':card.val,time:Date.now(),type:card.type||'text',img:card.type==='img'?card.val:null});
   }
   return msgs;
@@ -1044,15 +1054,17 @@ function delCt(cid){
 // ===== CARD LIBRARY =====
 function openCards(){
   let gs=Object.keys(D.cards);
-  if(!gs.length){D.cards['日常']=[];D.cards['表情包']=[];D.cards['状态']=[];gs=['日常','表情包','状态'];sv();}
-  // Ensure '日常' exists
+  if(!gs.length){D.cards['日常']=[];D.cards['Emoji']=[];D.cards['表情包']=[];D.cards['状态']=[];gs=['日常','Emoji','表情包','状态'];sv();}
+  // Ensure required groups exist
   if(!D.cards['日常']){D.cards['日常']=[];sv();}
+  if(!D.cards['Emoji']){D.cards['Emoji']=[];sv();}
   curGrp=gs[0];
   // Build group list with hierarchy: 聊天内容 section + 状态 section
   let chatGs=gs.filter(g=>g!=='状态'), statusG=gs.includes('状态');
   let gHtml='<div style="font-size:10px;color:var(--text2);padding:8px 12px 4px;font-weight:600;">聊天内容</div>';
   for(let g of chatGs){
-    gHtml+=`<div class="gi${g===curGrp?' on':''}" data-g="${g}" onclick="selGrp('${g.replace(/'/g,"\\'")}')">${g}</div>`;
+    let emojiBadge=(g==='Emoji')?' <span style="font-size:10px;color:var(--tab-on);">🔹</span>':'';
+    gHtml+=`<div class="gi${g===curGrp?' on':''}" data-g="${g}" onclick="selGrp('${g.replace(/'/g,"\\'")}')">${g}${emojiBadge}</div>`;
   }
   if(statusG){
     gHtml+='<div style="font-size:10px;color:var(--text2);padding:8px 12px 4px;font-weight:600;">状态</div>';
@@ -1061,50 +1073,78 @@ function openCards(){
   gHtml+=`<div style="padding:6px;"><button class="btn btn-o btn-s" onclick="addGrp()" style="width:100%;">+ 新建分组</button></div>`;
   let h=`<div class="ce"><div class="ce-l" id="ceGrps">${gHtml}</div><div class="ce-r" id="ceItems"></div></div>`;
   modal(h,`<button class="btn btn-o btn-s" onclick="importCardsJSON()"><svg viewBox="0 0 24 24" width="14" height="14" style="vertical-align:-2px;margin-right:2px;"><path d="M12 21V9M7 15l5-5 5 5" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"/><path d="M5 7V5h14v2" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round"/></svg>导入JSON</button><button class="btn btn-o" onclick="closeModal();sv();renderAll();">完成</button>`);
-  renderCards();
+  // 延迟渲染确保 DOM 完全就绪，修复大量卡片时首次不显示的问题
+  setTimeout(()=>renderCards(),50);
 }
 function selGrp(g){curGrp=g;document.querySelectorAll('#ceGrps .gi').forEach(el=>el.classList.toggle('on',el.dataset.g===g));renderCards();}
 function renderCards(){
   let el=document.getElementById('ceItems');if(!el)return;
   let cards=D.cards[curGrp]||[];
+  let maxCards=999;
   let searchTerm=(document.getElementById('cardSearch')?.value||'').trim().toLowerCase();
   let filtered=searchTerm?cards.filter(c=>c.val.toLowerCase().includes(searchTerm)):cards;
+  let limitNote=cards.length>=maxCards?`<span style="color:var(--danger);">（已达上限 ${maxCards} 条）</span>`:'';
   let h=`<div style="margin-bottom:8px;">
     <input class="card-search" id="cardSearch" type="text" placeholder="🔍 搜索字卡..." value="${searchTerm}" oninput="renderCards()">
-    <div class="fl">批量添加（每行一条，自动去重）</div>
+    <div class="fl">批量添加（每行一条，自动去重 · 上限${maxCards}条）</div>
     <textarea id="newCardTxt" class="fi" rows="4" placeholder="每行一条&#10;支持文字、emoji&#10;粘贴多行批量导入" style="font-size:13px;resize:vertical;"></textarea>
     <div style="margin-top:4px;display:flex;gap:4px;">
       <button class="btn btn-p btn-s" onclick="addTextCard()">添加文字</button>
       <button class="btn btn-o btn-s" onclick="addImgCard()"><svg viewBox="0 0 24 24" width="14" height="14" style="vertical-align:-2px;margin-right:2px;"><rect x="2" y="4" width="20" height="16" rx="2" fill="none" stroke="currentColor" stroke-width="2"/><circle cx="8.5" cy="10.5" r="2" fill="none" stroke="currentColor" stroke-width="1.5"/><polyline points="22,16 17,11 10,18" fill="none" stroke="currentColor" stroke-width="1.5"/></svg>上传图片(可多选)</button>
     </div></div>
     <div style="margin-bottom:6px;display:flex;gap:4px;">${curGrp!=='状态'?`<button class="btn btn-o btn-s" onclick="renameGrp()"><svg viewBox="0 0 24 24" width="12" height="12" style="vertical-align:-1px;margin-right:2px;"><path d="M17 3a2.828 2.828 0 014 4L7.5 20.5 2 22l1.5-5.5L17 3z" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"/></svg>重命名</button><button class="btn btn-d btn-s" onclick="delGrp()"><svg viewBox="0 0 24 24" width="12" height="12" style="vertical-align:-1px;margin-right:2px;"><polyline points="3 6 5 6 21 6" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round"/><path d="M19 6l-1 14a2 2 0 01-2 2H8a2 2 0 01-2-2L5 6M10 11v6M14 11v6" fill="none" stroke="currentColor" stroke-width="1.5" stroke-linecap="round"/></svg>删除</button>`:'<span style="font-size:11px;color:var(--text2);">状态分组不可删除</span>'}</div>
-    <div style="font-size:11px;color:var(--text2);margin-bottom:6px;">共 ${cards.length} 条${searchTerm?' · 筛选出 '+filtered.length+' 条':''} · 点击卡片删除</div>`;
+    <div style="font-size:11px;color:var(--text2);margin-bottom:6px;">共 ${cards.length} 条${searchTerm?' · 筛选出 '+filtered.length+' 条':''} · 点击卡片删除 ${limitNote}</div>
+    <button class="ce-back-top" id="ceBackTop" onclick="scrollCeToTop()" title="回到顶部">↑</button>`;
   for(let c of filtered){
     if(c.type==='img')h+=`<span class="card-tag" onclick="rmCard('${curGrp.replace(/'/g,"\\'")}','${c.val.replace(/'/g,"\\'")}')"><img src="${c.val}"> <span class=x>×</span></span>`;
     else h+=`<span class="card-tag" onclick="rmCard('${curGrp.replace(/'/g,"\\'")}','${c.val.replace(/'/g,"\\'").replace(/"/g,'&quot;')}')">${c.val} <span class=x>×</span></span>`;
   }
   el.innerHTML=h;
+  // 回到顶部按钮滚动监听
+  let btn=document.getElementById('ceBackTop');
+  if(btn){
+    el.onscroll=function(){
+      btn.classList.toggle('show',el.scrollTop>200);
+    };
+  }
+}
+function scrollCeToTop(){
+  let el=document.getElementById('ceItems');
+  if(el)el.scrollTop=0;
 }
 function addTextCard(){
   let inp=document.getElementById('newCardTxt');if(!inp)return;
   let txt=inp.value.trim();if(!txt)return;
   if(!D.cards[curGrp])D.cards[curGrp]=[];
+  let maxCards=999,cur=D.cards[curGrp].length,remain=maxCards-cur;
+  if(remain<=0){toast(`该分组已达上限 ${maxCards} 条`);return;}
   let lines=txt.split('\n').map(l=>l.trim()).filter(Boolean);
-  let added=0,skipped=0;
+  let added=0,skipped=0,over=0;
   for(let line of lines){
+    if(added>=remain){over++;continue;}
     if(!D.cards[curGrp].find(c=>c.val===line)){D.cards[curGrp].push({type:'text',val:line});added++;}
     else skipped++;
   }
   sv();renderCards();
-  if(added)toast(`已添加 ${added} 条`+(skipped?`，跳过 ${skipped} 条重复`:''));
-  else toast('全部重复，已跳过');
+  let msgs=[];
+  if(added)msgs.push(`已添加 ${added} 条`);
+  if(skipped)msgs.push(`跳过 ${skipped} 条重复`);
+  if(over)msgs.push(`${over} 条超出上限被忽略`);
+  toast(msgs.length?msgs.join('，'):'全部重复，已跳过');
   inp.value='';
 }
 async function addImgCard(){
   let urls=await pickMultiImg(300,300,0.7);if(!urls||!urls.length)return;
   if(!D.cards[curGrp])D.cards[curGrp]=[];
-  for(let u of urls){D.cards[curGrp].push({type:'img',val:u});}
-  sv();renderCards();toast(`已添加 ${urls.length} 张图片`);
+  let maxCards=999,cur=D.cards[curGrp].length,remain=maxCards-cur;
+  if(remain<=0){toast(`该分组已达上限 ${maxCards} 条`);return;}
+  let added=0,over=0;
+  for(let u of urls){
+    if(added>=remain){over++;continue;}
+    D.cards[curGrp].push({type:'img',val:u});added++;
+  }
+  sv();renderCards();
+  toast(`已添加 ${added} 张图片`+(over?`，${over} 张超出上限被忽略`:''));
 }
 function rmCard(g,v){if(!D.cards[g])return;D.cards[g]=D.cards[g].filter(c=>c.val!==v);sv();renderCards();}
 function addGrp(){
@@ -1133,9 +1173,11 @@ function importCardsJSON(){
         let raw=ev.target.result;if(raw.charCodeAt(0)===0xFEFF)raw=raw.slice(1);
         let data=JSON.parse(raw);
         let added=0;
+        let maxCards=999;
         let importOne=function(g,val,type){
           if(!val||typeof val!=='string')return;
           if(!D.cards[g])D.cards[g]=[];
+          if(D.cards[g].length>=maxCards)return;
           if(!D.cards[g].find(x=>x.val===val)){D.cards[g].push({type:type||'text',val});added++;}
         };
         // 格式1: customReplyGroups [{name, items:[]}] — 从其他app导出的分组字卡
@@ -1362,7 +1404,9 @@ function bind(){
 // ===== INIT =====
 function init(){
   ld();
-  if(!D.cards||!Object.keys(D.cards).length)D.cards={'日常':[{type:'text',val:'你好呀~ 🌞'},{type:'text',val:'在干嘛呢？'},{type:'text',val:'今天天气真好 ☀️'},{type:'text',val:'哈哈哈哈哈 😂'},{type:'text',val:'真的假的！'},{type:'text',val:'早点休息哦 🌙'},{type:'text',val:'记得吃饭！'},{type:'text',val:'😊'},{type:'text',val:'😂'},{type:'text',val:'🥰'},{type:'text',val:'[贴贴]'},{type:'text',val:'[暗中观察]'}],'表情包':[{type:'text',val:'😂'},{type:'text',val:'😊'},{type:'text',val:'🥰'},{type:'text',val:'😭'},{type:'text',val:'🤣'},{type:'text',val:'😡'},{type:'text',val:'👍'},{type:'text',val:'❤️'},{type:'text',val:'[贴贴]'},{type:'text',val:'[暗中观察]'},{type:'text',val:'[裂开]'},{type:'text',val:'[狗头]'}],'状态':[{type:'text',val:'在线'},{type:'text',val:'摸鱼中 🐟'},{type:'text',val:'忙碌中...'},{type:'text',val:'睡觉中 😴'},{type:'text',val:'元气满满 ✨'},{type:'text',val:'搬砖中 🧱'}]};
+  if(!D.cards||!Object.keys(D.cards).length)D.cards={'日常':[{type:'text',val:'你好呀~ 🌞'},{type:'text',val:'在干嘛呢？'},{type:'text',val:'今天天气真好 ☀️'},{type:'text',val:'哈哈哈哈哈 😂'},{type:'text',val:'真的假的！'},{type:'text',val:'早点休息哦 🌙'},{type:'text',val:'记得吃饭！'},{type:'text',val:'😊'},{type:'text',val:'😂'},{type:'text',val:'🥰'},{type:'text',val:'[贴贴]'},{type:'text',val:'[暗中观察]'}],'Emoji':[{type:'text',val:'😂'},{type:'text',val:'😊'},{type:'text',val:'🥰'},{type:'text',val:'😭'},{type:'text',val:'🤣'},{type:'text',val:'😡'},{type:'text',val:'👍'},{type:'text',val:'❤️'},{type:'text',val:'🔥'},{type:'text',val:'👀'},{type:'text',val:'💪'},{type:'text',val:'🙏'},{type:'text',val:'😅'},{type:'text',val:'🥺'},{type:'text',val:'😎'},{type:'text',val:'🤔'},{type:'text',val:'😋'},{type:'text',val:'💕'},{type:'text',val:'✨'},{type:'text',val:'🎉'}],'表情包':[{type:'text',val:'😂'},{type:'text',val:'😊'},{type:'text',val:'🥰'},{type:'text',val:'😭'},{type:'text',val:'🤣'},{type:'text',val:'😡'},{type:'text',val:'👍'},{type:'text',val:'❤️'},{type:'text',val:'[贴贴]'},{type:'text',val:'[暗中观察]'},{type:'text',val:'[裂开]'},{type:'text',val:'[狗头]'}],'状态':[{type:'text',val:'在线'},{type:'text',val:'摸鱼中 🐟'},{type:'text',val:'忙碌中...'},{type:'text',val:'睡觉中 😴'},{type:'text',val:'元气满满 ✨'},{type:'text',val:'搬砖中 🧱'}]};
+  // 确保 Emoji 分组存在（迁移旧数据）
+  if(!D.cards['Emoji']){D.cards['Emoji']=[];sv();}
   if(!D.contacts||!D.contacts.length){let allGs=Object.keys(D.cards).filter(g=>g!=='状态');D.contacts=[{id:'c1',name:'小明',avatar:'',cardGroups:allGs},{id:'c2',name:'小红',avatar:'',cardGroups:allGs},{id:'c3',name:'阿杰',avatar:'',cardGroups:allGs}];}
   if(!D.settings)D.settings={replyCount:[1,5],activeDelay:5,callAnswer:0.5,callActiveChance:0.01,statusInterval:5,statusProb:0,letterDays:[1,3],letterReplies:[5,30],momentsLike:0.6,momentsComment:0.3};
   if(!D.moments)D.moments=[];
