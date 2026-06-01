@@ -551,6 +551,7 @@ function renderCts(){
 
 function renderMoments(){
   let el=document.getElementById('momentsFeed');
+  if(!Array.isArray(D.moments))D.moments=[];
   if(!D.moments.length){el.innerHTML='<div class=empty>暂无动态<br><span style="font-size:12px;">点击右上角📷发一条吧</span></div>';return;}
   let h='';
   for(let i=0;i<D.moments.length;i++){
@@ -618,6 +619,7 @@ function svMoment(){
   let ct=document.getElementById('pmCt').value.trim();
   if(!ct){toast('请写点内容');return;}
   let img=document.getElementById('pmImgPrv')?.dataset?.img||'';
+  if(!Array.isArray(D.moments))D.moments=[];
   D.moments.unshift({_id:uid(),author:D.me.name,content:ct,time:'刚刚',image:img,_likes:[],_comments:[],_createdAt:Date.now()});
   sv();closeModal();renderMoments();toast('已发布');
 }
@@ -1076,36 +1078,59 @@ function openCards(){
   // 延迟渲染确保 DOM 完全就绪，修复大量卡片时首次不显示的问题
   setTimeout(()=>renderCards(),50);
 }
-function selGrp(g){curGrp=g;document.querySelectorAll('#ceGrps .gi').forEach(el=>el.classList.toggle('on',el.dataset.g===g));renderCards();}
+function selGrp(g){curGrp=g;let hdr=document.getElementById('ceHeader');if(hdr)hdr.remove();document.querySelectorAll('#ceGrps .gi').forEach(el=>el.classList.toggle('on',el.dataset.g===g));renderCards();}
 function renderCards(){
   let el=document.getElementById('ceItems');if(!el)return;
   let cards=D.cards[curGrp]||[];
   let maxCards=999;
+  // 首次渲染：创建完整布局（头部 + 卡片列表区）
+  if(!document.getElementById('ceHeader')){
+    let h=`<div id="ceHeader" style="margin-bottom:8px;">
+      <input class="card-search" id="cardSearch" type="text" placeholder="🔍 搜索字卡..." oninput="renderCardList()">
+      <div class="fl">批量添加（每行一条，自动去重 · 上限${maxCards}条）</div>
+      <textarea id="newCardTxt" class="fi" rows="4" placeholder="每行一条&#10;支持文字、emoji&#10;粘贴多行批量导入" style="font-size:13px;resize:vertical;"></textarea>
+      <div style="margin-top:4px;display:flex;gap:4px;">
+        <button class="btn btn-p btn-s" onclick="addTextCard()">添加文字</button>
+        <button class="btn btn-o btn-s" onclick="addImgCard()"><svg viewBox="0 0 24 24" width="14" height="14" style="vertical-align:-2px;margin-right:2px;"><rect x="2" y="4" width="20" height="16" rx="2" fill="none" stroke="currentColor" stroke-width="2"/><circle cx="8.5" cy="10.5" r="2" fill="none" stroke="currentColor" stroke-width="1.5"/><polyline points="22,16 17,11 10,18" fill="none" stroke="currentColor" stroke-width="1.5"/></svg>上传图片(可多选)</button>
+      </div></div>
+      <div style="margin-bottom:6px;display:flex;gap:4px;">${curGrp!=='状态'?`<button class="btn btn-o btn-s" onclick="renameGrp()"><svg viewBox="0 0 24 24" width="12" height="12" style="vertical-align:-1px;margin-right:2px;"><path d="M17 3a2.828 2.828 0 014 4L7.5 20.5 2 22l1.5-5.5L17 3z" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"/></svg>重命名</button><button class="btn btn-d btn-s" onclick="delGrp()"><svg viewBox="0 0 24 24" width="12" height="12" style="vertical-align:-1px;margin-right:2px;"><polyline points="3 6 5 6 21 6" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round"/><path d="M19 6l-1 14a2 2 0 01-2 2H8a2 2 0 01-2-2L5 6M10 11v6M14 11v6" fill="none" stroke="currentColor" stroke-width="1.5" stroke-linecap="round"/></svg>删除</button>`:'<span style="font-size:11px;color:var(--text2);">状态分组不可删除</span>'}</div>
+      <div style="font-size:11px;color:var(--text2);margin-bottom:6px;" data-cnt>共 ${cards.length} 条 · 点击卡片删除</div>
+      <div id="ceCardList"></div>
+      <button class="ce-back-top" id="ceBackTop" onclick="scrollCeToTop()" title="回到顶部">↑</button>`;
+    el.innerHTML=h;
+    let btn=document.getElementById('ceBackTop');
+    if(btn){
+      el.onscroll=function(){
+        btn.classList.toggle('show',el.scrollTop>200);
+      };
+    }
+  }
+  renderCardList();
+}
+function renderCardList(){
+  let list=document.getElementById('ceCardList');if(!list)return;
+  let cards=D.cards[curGrp]||[];
   let searchTerm=(document.getElementById('cardSearch')?.value||'').trim().toLowerCase();
   let filtered=searchTerm?cards.filter(c=>c.val.toLowerCase().includes(searchTerm)):cards;
+  let maxCards=999;
   let limitNote=cards.length>=maxCards?`<span style="color:var(--danger);">（已达上限 ${maxCards} 条）</span>`:'';
-  let h=`<div style="margin-bottom:8px;">
-    <input class="card-search" id="cardSearch" type="text" placeholder="🔍 搜索字卡..." value="${searchTerm}" oninput="renderCards()">
-    <div class="fl">批量添加（每行一条，自动去重 · 上限${maxCards}条）</div>
-    <textarea id="newCardTxt" class="fi" rows="4" placeholder="每行一条&#10;支持文字、emoji&#10;粘贴多行批量导入" style="font-size:13px;resize:vertical;"></textarea>
-    <div style="margin-top:4px;display:flex;gap:4px;">
-      <button class="btn btn-p btn-s" onclick="addTextCard()">添加文字</button>
-      <button class="btn btn-o btn-s" onclick="addImgCard()"><svg viewBox="0 0 24 24" width="14" height="14" style="vertical-align:-2px;margin-right:2px;"><rect x="2" y="4" width="20" height="16" rx="2" fill="none" stroke="currentColor" stroke-width="2"/><circle cx="8.5" cy="10.5" r="2" fill="none" stroke="currentColor" stroke-width="1.5"/><polyline points="22,16 17,11 10,18" fill="none" stroke="currentColor" stroke-width="1.5"/></svg>上传图片(可多选)</button>
-    </div></div>
-    <div style="margin-bottom:6px;display:flex;gap:4px;">${curGrp!=='状态'?`<button class="btn btn-o btn-s" onclick="renameGrp()"><svg viewBox="0 0 24 24" width="12" height="12" style="vertical-align:-1px;margin-right:2px;"><path d="M17 3a2.828 2.828 0 014 4L7.5 20.5 2 22l1.5-5.5L17 3z" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"/></svg>重命名</button><button class="btn btn-d btn-s" onclick="delGrp()"><svg viewBox="0 0 24 24" width="12" height="12" style="vertical-align:-1px;margin-right:2px;"><polyline points="3 6 5 6 21 6" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round"/><path d="M19 6l-1 14a2 2 0 01-2 2H8a2 2 0 01-2-2L5 6M10 11v6M14 11v6" fill="none" stroke="currentColor" stroke-width="1.5" stroke-linecap="round"/></svg>删除</button>`:'<span style="font-size:11px;color:var(--text2);">状态分组不可删除</span>'}</div>
-    <div style="font-size:11px;color:var(--text2);margin-bottom:6px;">共 ${cards.length} 条${searchTerm?' · 筛选出 '+filtered.length+' 条':''} · 点击卡片删除 ${limitNote}</div>
-    <button class="ce-back-top" id="ceBackTop" onclick="scrollCeToTop()" title="回到顶部">↑</button>`;
+  let h='';
   for(let c of filtered){
     if(c.type==='img')h+=`<span class="card-tag" onclick="rmCard('${curGrp.replace(/'/g,"\\'")}','${c.val.replace(/'/g,"\\'")}')"><img src="${c.val}"> <span class=x>×</span></span>`;
     else h+=`<span class="card-tag" onclick="rmCard('${curGrp.replace(/'/g,"\\'")}','${c.val.replace(/'/g,"\\'").replace(/"/g,'&quot;')}')">${c.val} <span class=x>×</span></span>`;
   }
-  el.innerHTML=h;
-  // 回到顶部按钮滚动监听
-  let btn=document.getElementById('ceBackTop');
-  if(btn){
-    el.onscroll=function(){
-      btn.classList.toggle('show',el.scrollTop>200);
-    };
+  list.innerHTML=h;
+  // 更新计数
+  let cnt=document.querySelector('#ceItems div[data-cnt]');
+  if(cnt)cnt.innerHTML=`共 ${cards.length} 条${searchTerm?' · 筛选出 '+filtered.length+' 条':''} · 点击卡片删除 ${limitNote}`;
+}
+function updateCardCount(){
+  let cards=D.cards[curGrp]||[];
+  let cnt=document.querySelector('#ceItems div[data-cnt]');
+  if(cnt){
+    let searchTerm=(document.getElementById('cardSearch')?.value||'').trim().toLowerCase();
+    let filtered=searchTerm?cards.filter(c=>c.val.toLowerCase().includes(searchTerm)):cards;
+    cnt.innerHTML=`共 ${cards.length} 条${searchTerm?' · 筛选出 '+filtered.length+' 条':''} · 点击卡片删除`;
   }
 }
 function scrollCeToTop(){
@@ -1114,24 +1139,26 @@ function scrollCeToTop(){
 }
 function addTextCard(){
   let inp=document.getElementById('newCardTxt');if(!inp)return;
-  let txt=inp.value.trim();if(!txt)return;
+  let txt=inp.value;let lines=txt.split('\n').map(l=>l.trim()).filter(Boolean);
+  if(!lines.length)return;
   if(!D.cards[curGrp])D.cards[curGrp]=[];
   let maxCards=999,cur=D.cards[curGrp].length,remain=maxCards-cur;
   if(remain<=0){toast(`该分组已达上限 ${maxCards} 条`);return;}
-  let lines=txt.split('\n').map(l=>l.trim()).filter(Boolean);
   let added=0,skipped=0,over=0;
   for(let line of lines){
     if(added>=remain){over++;continue;}
     if(!D.cards[curGrp].find(c=>c.val===line)){D.cards[curGrp].push({type:'text',val:line});added++;}
     else skipped++;
   }
-  sv();renderCards();
+  sv();renderCardList();
+  // 清除文本域内容（重新获取，因为 renderCardList 不会替换 header）
+  let newInp=document.getElementById('newCardTxt');
+  if(newInp)newInp.value='';
   let msgs=[];
   if(added)msgs.push(`已添加 ${added} 条`);
   if(skipped)msgs.push(`跳过 ${skipped} 条重复`);
   if(over)msgs.push(`${over} 条超出上限被忽略`);
   toast(msgs.length?msgs.join('，'):'全部重复，已跳过');
-  inp.value='';
 }
 async function addImgCard(){
   let urls=await pickMultiImg(300,300,0.7);if(!urls||!urls.length)return;
@@ -1143,10 +1170,14 @@ async function addImgCard(){
     if(added>=remain){over++;continue;}
     D.cards[curGrp].push({type:'img',val:u});added++;
   }
-  sv();renderCards();
+  sv();renderCardList();
   toast(`已添加 ${added} 张图片`+(over?`，${over} 张超出上限被忽略`:''));
 }
-function rmCard(g,v){if(!D.cards[g])return;D.cards[g]=D.cards[g].filter(c=>c.val!==v);sv();renderCards();}
+function rmCard(g,v){
+  if(!D.cards[g])return;
+  D.cards[g]=D.cards[g].filter(c=>c.val!==v);
+  sv();renderCardList();
+}
 function addGrp(){
   let n=prompt('新分组名称（将添加到「聊天内容」中）：');
   if(!n||!n.trim())return;let t=n.trim();
@@ -1418,8 +1449,16 @@ function init(){
   let sc=D.cards['状态']||[];
   for(let ct of D.contacts){if(!ct._status)ct._status=sc.length?pr(sc).val:'在线';}
   for(let p of D.moments){if(!p._id)p._id=uid();if(!p._likes)p._likes=[];if(!p._comments)p._comments=[];if(!p._createdAt)p._createdAt=Date.now();}
+  if(!D.msgs||typeof D.msgs!=='object')D.msgs={};
   for(let ms of Object.values(D.msgs)){for(let m of ms){if(m._read===undefined)m._read=true;}}
+  // 清理已删除联系人的残留 pending
+  for(let cid of Object.keys(D.pending)){if(!gc(cid))delete D.pending[cid];}
+  for(let cid of Object.keys(D.pendingActive||{})){if(!gc(cid))delete D.pendingActive[cid];}
+  // 确保关键字段类型正确
+  if(!Array.isArray(D.moments))D.moments=[];
+  if(!Array.isArray(D.contacts))D.contacts=[];
   sv();renderAll();bind();
+  checkSim(); // 立即处理过期pending，防卡"正在输入"
   simTimer=setInterval(checkSim,5000);
   momentsCheck();
 }
