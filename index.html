@@ -378,7 +378,7 @@ let D={
 let curTab='chats',curChat=null,curGrp=null;
 let simTimer=null,callTimer=null;
 
-function sv(){localStorage.setItem(K,JSON.stringify(D));}
+function sv(){try{localStorage.setItem(K,JSON.stringify(D));}catch(e){if(e.name==='QuotaExceededError')toast('存储空间不足！请清理旧数据或导出备份');else console.warn('Save failed:',e);}}
 function ld(){try{let r=localStorage.getItem(K);if(r)D={...D,...JSON.parse(r)};}catch(e){}}
 function uid(){return Date.now().toString(36)+Math.random().toString(36).slice(2,7);}
 function rd(a,b){return Math.floor(Math.random()*(b-a+1))+a;}
@@ -424,19 +424,16 @@ function genMsgs(contact,count){
     return valid.length?valid:allNonStatus;
   }
   let groups=contact.isGroup?allNonStatus:validGroups(contact.cardGroups);
-  // 对面随机发表情包：30%概率从表情包组选取
-  let stickerGroups=D.cards['表情包']&&D.cards['表情包'].length?['表情包']:null;
   let n=Math.min(count,10);
   for(let i=0;i<n;i++){
     let from=contact.name,av=contact.avatar||'',cg=groups;
     if(contact.isGroup&&contact.members&&contact.members.length){
       let m=pr(contact.members);from=m.name;av=m.avatar||'';cg=validGroups(m.cardGroups);
     }
-    let useSticker=stickerGroups&&rf()<0.3;
-    let cards=allCards(useSticker?stickerGroups:cg);
-    // Emoji分组和其他字卡组合：混入候选池一起随机选取
+    let baseCards=allCards(cg);
+    let stickerCards=D.cards['表情包']||[];
     let emojiCards=D.cards['Emoji']||[];
-    let pool=[...cards,...emojiCards];
+    let pool=[...baseCards,...emojiCards,...stickerCards];
     let card=pr(pool);
     msgs.push({id:uid(),from,fromAvatar:av,text:card.type==='img'?'[图片]':card.val,time:Date.now(),type:card.type||'text',img:card.type==='img'?card.val:null});
   }
@@ -1075,8 +1072,7 @@ function openCards(){
   gHtml+=`<div style="padding:6px;"><button class="btn btn-o btn-s" onclick="addGrp()" style="width:100%;">+ 新建分组</button></div>`;
   let h=`<div class="ce"><div class="ce-l" id="ceGrps">${gHtml}</div><div class="ce-r" id="ceItems"></div></div>`;
   modal(h,`<button class="btn btn-o btn-s" onclick="importCardsJSON()"><svg viewBox="0 0 24 24" width="14" height="14" style="vertical-align:-2px;margin-right:2px;"><path d="M12 21V9M7 15l5-5 5 5" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"/><path d="M5 7V5h14v2" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round"/></svg>导入JSON</button><button class="btn btn-o" onclick="closeModal();sv();renderAll();">完成</button>`);
-  // 延迟渲染确保 DOM 完全就绪，修复大量卡片时首次不显示的问题
-  setTimeout(()=>renderCards(),50);
+  renderCards();
 }
 function selGrp(g){curGrp=g;let hdr=document.getElementById('ceHeader');if(hdr)hdr.remove();document.querySelectorAll('#ceGrps .gi').forEach(el=>el.classList.toggle('on',el.dataset.g===g));renderCards();}
 function renderCards(){
@@ -1458,6 +1454,10 @@ function init(){
   if(!Array.isArray(D.moments))D.moments=[];
   if(!Array.isArray(D.contacts))D.contacts=[];
   sv();renderAll();bind();
+  // 强制将所有 pending 时间设为当前，防止卡在"正在输入"
+  let now=Date.now();
+  for(let cid of Object.keys(D.pending)){D.pending[cid].time=Math.min(D.pending[cid].time||now,now);}
+  for(let cid of Object.keys(D.pendingActive||{})){D.pendingActive[cid].time=Math.min(D.pendingActive[cid].time||now,now);}
   checkSim(); // 立即处理过期pending，防卡"正在输入"
   simTimer=setInterval(checkSim,5000);
   momentsCheck();
@@ -1470,3 +1470,4 @@ document.addEventListener('visibilitychange',()=>{
 </script>
 </body>
 </html>
+
